@@ -59,6 +59,8 @@ bool DataBaseManager::DBConnect( )
 
 bool DataBaseManager::SignUp( const std::string& name, const std::string& password )
 {
+	name;
+	password;
 	return false;
 }
 
@@ -72,15 +74,14 @@ bool DataBaseManager::LogOn( const std::string& name, const std::string& passwor
 	if ( returnValue == SQL_SUCCESS || returnValue == SQL_SUCCESS_WITH_INFO )
 	{
 		SQLBindParameter( m_hStmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 16, 0, ( SQLPOINTER ) name.c_str( ), 16, NULL );
-		SQLBindParameter( m_hStmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 32, 0, ( SQLPOINTER ) password.c_str( ), 32, NULL );
+		SQLBindParameter( m_hStmt, 2, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 32, 0, ( SQLPOINTER ) password.c_str( ), 32, NULL );
 
 		returnValue = SQLExecute( m_hStmt );
 		if ( returnValue == SQL_SUCCESS || returnValue == SQL_SUCCESS_WITH_INFO )
 		{
-			SQLINTEGER name_length = 0;
-			SQLINTEGER score = 0;
-
-			SQLBindCol( m_hStmt, 1, SQL_C_LONG, ( SQLPOINTER ) bestScore, sizeof( bestScore ), NULL );
+			int score = 0;
+			SQLBindCol( m_hStmt, 1, SQL_C_LONG, reinterpret_cast< SQLPOINTER >( score ), sizeof( bestScore ), NULL );
+			bestScore = score;
 			returnValue = SQLFetch( m_hStmt );
 			if ( returnValue == SQL_SUCCESS || returnValue == SQL_SUCCESS_WITH_INFO )
 				return true;

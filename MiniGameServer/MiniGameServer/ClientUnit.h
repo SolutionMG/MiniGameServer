@@ -13,7 +13,7 @@ protected:
 	WSAOVERLAPPED_EXTEND m_over;
 	EClientState m_state;
 
-	unsigned char m_previousReceivePosition;
+	int m_previousReceivePosition;
 
 	std::mutex m_receiveLock;
 
@@ -26,13 +26,13 @@ public:
 	void SetOverlappedExtend( const WSAOVERLAPPED_EXTEND& over )		{ memcpy_s( &m_over, sizeof( m_over ), &over, sizeof( over ) ); }
 	void SetOverlappedOperation( const EOperationType& operation )		{ m_over.type = operation; }
 	void SetState( const EClientState& state )							{ m_state = state; }
-	void SetPreviousReceivePosition( const unsigned char& position )	{ m_previousReceivePosition = position; }
+	void SetPreviousReceivePosition( const int& position )	{ m_previousReceivePosition = position; }
 
 	///Get 
 	const SOCKET& GetSocket( )											{ return m_socket; }
 	const WSAOVERLAPPED_EXTEND& GetOverlappedExtend( )					{ return m_over; }
 	const EClientState& GetState( ) const								{ return m_state; }
-	const unsigned char& GetPreviousReceivePosition( )					{ return m_previousReceivePosition; }
+	const int& GetPreviousReceivePosition( )					{ return m_previousReceivePosition; }
 
 	///패킷 송수신 요청 (Overlapped)
 	void ReceivePacket( );

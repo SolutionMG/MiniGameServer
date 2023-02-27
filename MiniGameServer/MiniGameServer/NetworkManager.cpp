@@ -121,27 +121,31 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 		[ socket, packet, bytes ]( )
 	{
 		auto& users = UserManager::GetInstance( ).GetUsers( );
-		unsigned char startReceive = users[ socket ]->GetPreviousReceivePosition( );
+		int startReceive = users[ socket ]->GetPreviousReceivePosition( );
+		int byte = bytes;
 		unsigned short packetSize = packet[ 0 ];
 
 		// 해딩 패킷 사이즈 만큼 왔는지 검사
 		// 패킷의 사이즈만큼 다 왔다면 다음 netbuffer read 위치 초기화
 		// 패킷의 사이즈만큼 다 안왔다면, Read 위치 갱신 및 패킷 타입에 따른 처리
 
-		if ( packetSize > bytes + startReceive )
+		if ( packetSize > byte + startReceive )
 		{
-			users[ socket ]->SetPreviousReceivePosition( startReceive + bytes );
+			const int previousPosition = startReceive + byte;
+			users[ socket ]->SetPreviousReceivePosition( previousPosition );
 		}
 		else
 		{
 			char completePacket[ InitServer::MAX_PACKETSIZE ];
 			memcpy_s( completePacket, sizeof( completePacket ), packet, packetSize );
-			memcpy_s( packet, sizeof( InitServer::MAX_BUFFERSIZE ), packet + packetSize, ( bytes + startReceive - packetSize ) );
+			memcpy_s( packet, sizeof( InitServer::MAX_BUFFERSIZE ), packet + packetSize, ( byte + startReceive - packetSize ) );
 
 			///Process Packet
 			UserManager::GetInstance( ).ProcessPacket( socket, completePacket );
-			users[ socket ]->SetPreviousReceivePosition( static_cast< unsigned char >( bytes + startReceive - packetSize ) );
+			users[ socket ]->SetPreviousReceivePosition( static_cast< unsigned char >( byte + startReceive - packetSize ) );
 		}
+
+		users[ socket ]->ReceivePacket( );
 	} );
 	
 }
@@ -236,7 +240,7 @@ void NetworkManager::MainWorkProcess( )
 				[ userKey ]( )
 				{
 					auto& users = UserManager::GetInstance( ).GetUsers( );
-					const int userCount = users.size( );
+					const int userCount = static_cast< int >( users.size( ) );
 					if ( userCount > InitServer::MAX_PLAYERNUM )
 					{
 						users[ userKey ] = new PlayerUnit( userKey );
