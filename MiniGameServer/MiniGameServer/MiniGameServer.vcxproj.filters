@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="00.Main">
+      <UniqueIdentifier>{85a2bba1-4677-4ddd-9418-3bf94219b230}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="98.DefaultHeader">
+      <UniqueIdentifier>{fe4942ca-c12e-4bea-946d-5e405537cb44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Manager">
+      <UniqueIdentifier>{edf09a62-2646-4063-b7e8-2063b3536c66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="97.Log">
+      <UniqueIdentifier>{da2d7310-f0e5-4577-ab6c-2b47328e18b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99.Base">
+      <UniqueIdentifier>{c96760a3-cdd2-414c-be1c-ff27c1e1860c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Manager\Network">
+      <UniqueIdentifier>{32918b3a-3f0a-4694-8e69-3a02925a4a7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Manager\Network\NetworkManager">
+      <UniqueIdentifier>{7bc0d70b-8b39-45df-adfb-02305ae109b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Manager\Task">
+      <UniqueIdentifier>{df775343-dd0f-4ed6-9925-9cd22a221586}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Manager\Task\UserManager">
+      <UniqueIdentifier>{f09a87e2-e04a-489a-84bb-64a0ed0ce875}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Unit">
+      <UniqueIdentifier>{f3e6a3bc-01ca-40db-a2b4-2ebe73f45357}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Unit\ClientUnit">
+      <UniqueIdentifier>{c4cdaeeb-6bef-4306-8ed1-960101d38e98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Unit\ClientUnit\PlayerUnit">
+      <UniqueIdentifier>{7d5bacd1-0fc8-4075-aae8-336dfb033b72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Manager\Network\OverlappedManager">
+      <UniqueIdentifier>{437d7ac9-c314-4ddb-a34f-88f7d782d8dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Manager\DatabaseManager">
+      <UniqueIdentifier>{83e420fa-859e-4c21-a14d-b79335eeb143}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Singleton.hpp">
+      <Filter>99.Base</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>98.DefaultHeader</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkManager.h">
+      <Filter>01.Manager\Network\NetworkManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Define.h">
+      <Filter>99.Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>97.Log</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseTaskManager.h">
+      <Filter>01.Manager\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="UserManager.h">
+      <Filter>01.Manager\Task\UserManager</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerUnit.h">
+      <Filter>02.Unit\ClientUnit\PlayerUnit</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientUnit.h">
+      <Filter>02.Unit\ClientUnit</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlappedManager.h">
+      <Filter>01.Manager\Network\OverlappedManager</Filter>
+    </ClInclude>
+    <ClInclude Include="DataBaseManager.h">
+      <Filter>01.Manager\DatabaseManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>99.Base</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MainProcess.cpp">
+      <Filter>00.Main</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>98.DefaultHeader</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkManager.cpp">
+      <Filter>01.Manager\Network\NetworkManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>97.Log</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseTaskManager.cpp">
+      <Filter>01.Manager\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="UserManager.cpp">
+      <Filter>01.Manager\Task\UserManager</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerUnit.cpp">
+      <Filter>02.Unit\ClientUnit\PlayerUnit</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientUnit.cpp">
+      <Filter>02.Unit\ClientUnit</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlappedManager.cpp">
+      <Filter>01.Manager\Network\OverlappedManager</Filter>
+    </ClCompile>
+    <ClCompile Include="DataBaseManager.cpp">
+      <Filter>01.Manager\DatabaseManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
