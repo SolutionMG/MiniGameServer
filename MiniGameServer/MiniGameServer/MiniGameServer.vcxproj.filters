@@ -43,6 +43,12 @@
     <Filter Include="01.Manager\DatabaseManager">
       <UniqueIdentifier>{83e420fa-859e-4c21-a14d-b79335eeb143}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Manager\Task\RoomManager">
+      <UniqueIdentifier>{8daa8a8e-4b6f-450c-ba24-230aa683d845}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Unit\RoomUnit">
+      <UniqueIdentifier>{d879b685-bfaf-4eee-84cd-4992199d2439}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Singleton.hpp">
@@ -81,6 +87,12 @@
     <ClInclude Include="Protocol.h">
       <Filter>99.Base</Filter>
     </ClInclude>
+    <ClInclude Include="RoomManager.h">
+      <Filter>01.Manager\Task\RoomManager</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomUnit.h">
+      <Filter>02.Unit\RoomUnit</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainProcess.cpp">
@@ -112,6 +124,12 @@
     </ClCompile>
     <ClCompile Include="DataBaseManager.cpp">
       <Filter>01.Manager\DatabaseManager</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomManager.cpp">
+      <Filter>01.Manager\Task\RoomManager</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomUnit.cpp">
+      <Filter>02.Unit\RoomUnit</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

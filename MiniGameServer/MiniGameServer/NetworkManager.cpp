@@ -4,7 +4,10 @@
 #include "NetworkManager.h"
 #include "OverlappedManager.h"
 #include "UserManager.h"
+#include "RoomManager.h"
+#include "RoomUnit.h"
 #include "PlayerUnit.h"
+#include "Protocol.h"
 #include "Log.h"
 
 NetworkManager::NetworkManager( ) : m_listenSocket( INVALID_SOCKET ), m_iocpHandle( NULL )
@@ -245,7 +248,7 @@ void NetworkManager::MainWorkProcess( )
 					{
 						users[ userKey ] = new PlayerUnit( userKey );
 						users[ userKey ]->SetOverlappedOperation( EOperationType::RECV );
-						users[ userKey ]->SetState( EClientState::ACCESS );
+						users[ userKey ]->SetState( EClientState::ACCESS ); 
 
 						HANDLE returnValue2 = CreateIoCompletionPort( reinterpret_cast< HANDLE >( userKey ), NetworkManager::GetInstance().GetIocpHandle(), userKey, 0 );
 						if ( returnValue2 == NULL )
@@ -255,6 +258,67 @@ void NetworkManager::MainWorkProcess( )
 						}
 
 						users[ userKey ]->ReceivePacket( );
+					}
+				} );
+
+			// Prototype -> 플레이어 접속 후 3명 존재 시 바로 게임으로 넘어가도록
+			// 방으로 이동
+			RoomManager::GetInstance( ).PushTask(
+				[ userKey ]( )
+				{
+					int roomNum = -1;
+					auto& rooms = RoomManager::GetInstance( ).GetRooms( );
+					for ( auto& [roomIndex, roomUnit] : rooms )
+					{
+						if ( roomUnit.GetPlayers( ).size( ) == 3 )
+							continue;
+						roomNum = roomIndex;
+						roomUnit.PushPlayer( userKey );
+						break;
+					}
+					// 방 새로 생성 - 3명 이하인 방이 없을 시 
+					if ( roomNum == -1 )
+					{
+						roomNum = RoomManager::GetInstance( ).GetNewRoomNumber( );
+					}
+					auto& currentRoom = rooms[ roomNum ];
+					
+					// 방에 접속 유저 추가
+					currentRoom.PushPlayer( userKey );
+
+					// 유저 상태 갱신 및 현재 접속한 방 입력
+					UserManager::GetInstance( ).PushTask(
+						[ userKey, roomNum ]( )
+						{
+							UserManager::GetInstance( ).GetUsers( )[ userKey ]->SetState( EClientState::MATCHING );
+							UserManager::GetInstance( ).GetUsers( )[ userKey ]->SetRoomNumber( roomNum );
+						} );
+
+					// 현재 방에 3명 존재 시 게임 시작
+					if ( currentRoom.GetPlayers( ).size( ) == 3 )
+					{
+						int color = 0;
+						// 방에 있는 플레이어들에게 각각의 플레이어들 초기 정보 전송 (고유 색, 이름 등)
+						for ( const auto& player : currentRoom.GetPlayers( ) )
+						{
+							for ( const auto& other : currentRoom.GetPlayers( ) )
+							{
+								UserManager::GetInstance( ).PushTask(
+									[ player, other, &color ]( )
+									{
+										auto& user = UserManager::GetInstance( ).GetUsers( )[ other ];
+										user->SetState( EClientState::GAME );
+										// 게임 시작 요청 클라이언트에게 보내기
+										Packet::GameStart packet;
+										packet.info.size = sizeof( packet );
+										packet.info.type = ServerToClient::GAMESTART;
+										packet.owner = player;
+										packet.color = color;
+										user->SendPacket( reinterpret_cast< const char* >( &packet ) );
+									} );
+							}
+							++color;
+						}
 					}
 				} );
 

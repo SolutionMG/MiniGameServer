@@ -7,6 +7,7 @@ ClientUnit::ClientUnit( const SOCKET& socket )
 	, m_over( )
 	, m_state( EClientState::END )
 	, m_previousReceivePosition ( 0 )
+	, m_roomNumber( -1 )
 {
 	m_over.wsaBuffer.buf = m_over.networkBuffer;
 	m_over.wsaBuffer.len = InitServer::MAX_BUFFERSIZE;

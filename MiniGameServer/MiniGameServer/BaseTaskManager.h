@@ -15,7 +15,7 @@ public:
 	
 	
 	void PushTask( const Task& task );
-	void Run( );
+	virtual void Run( );
 
 protected:
 	virtual const std::string GetName( )	const  noexcept = 0;

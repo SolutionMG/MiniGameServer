@@ -9,7 +9,7 @@ class PlayerUnit;
 
 class UserManager final
 	: public BaseTaskManager
-	, public Base::TSingleton < UserManager>
+	, public Base::TSingleton < UserManager >
 {
 public:
 	explicit UserManager( );

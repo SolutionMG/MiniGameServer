@@ -38,16 +38,16 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 		if ( DataBaseManager::GetInstance( ).LogOn( data->name, data->password, baseScore ) )
 		{
 			Packet::LoginResult send;
-			send.packetInfo.size = sizeof( Packet::LoginResult );
-			send.packetInfo.type = ServerToClient::LOGON_OK;
+			send.info.size = sizeof( Packet::LoginResult );
+			send.info.type = ServerToClient::LOGON_OK;
 			strcpy_s( send.name, data->name );
 			m_users[ socket ]->SendPacket( reinterpret_cast< const char* >( &send ) );
 		}
 		else
 		{
 			Packet::LoginResult send;
-			send.packetInfo.size = sizeof( Packet::LoginResult );
-			send.packetInfo.type = ServerToClient::LOGON_FAILED;
+			send.info.size = sizeof( Packet::LoginResult );
+			send.info.type = ServerToClient::LOGON_FAILED;
 			strcpy_s( send.name, data->name );
 			m_users[ socket ]->SendPacket( reinterpret_cast< const char* >( &send ) );
 		}

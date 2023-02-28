@@ -21,8 +21,8 @@ public:
 	bool RunServer( );
 	void ReassemblePacket( char* packet, const DWORD& bytes, const SOCKET& socket );
 
-
 	// Set
+
 
 	// Get
 	const HANDLE& GetIocpHandle( ) { return m_iocpHandle; }

@@ -3,7 +3,7 @@
 
 enum class EClientState : char
 {
-	ACCESS, LOGON, GAME, END
+	ACCESS, LOGON, MATCHING, GAME, END /*접속, 로그인, 매칭중, 게임중 */
 };
 
 class ClientUnit
@@ -12,6 +12,9 @@ protected:
 	SOCKET m_socket;
 	WSAOVERLAPPED_EXTEND m_over;
 	EClientState m_state;
+
+	//현재 속해있는 방 번호
+	int m_roomNumber; 
 
 	int m_previousReceivePosition;
 
@@ -26,13 +29,15 @@ public:
 	void SetOverlappedExtend( const WSAOVERLAPPED_EXTEND& over )		{ memcpy_s( &m_over, sizeof( m_over ), &over, sizeof( over ) ); }
 	void SetOverlappedOperation( const EOperationType& operation )		{ m_over.type = operation; }
 	void SetState( const EClientState& state )							{ m_state = state; }
-	void SetPreviousReceivePosition( const int& position )	{ m_previousReceivePosition = position; }
+	void SetPreviousReceivePosition( const int& position )				{ m_previousReceivePosition = position; }
+	void SetRoomNumber( const int& roomNum )							{ m_roomNumber = roomNum; }
 
 	///Get 
 	const SOCKET& GetSocket( )											{ return m_socket; }
 	const WSAOVERLAPPED_EXTEND& GetOverlappedExtend( )					{ return m_over; }
 	const EClientState& GetState( ) const								{ return m_state; }
-	const int& GetPreviousReceivePosition( )					{ return m_previousReceivePosition; }
+	const int& GetPreviousReceivePosition( )							{ return m_previousReceivePosition; }
+	const int& GetRoomNum( )											{ return m_roomNumber; }
 
 	///패킷 송수신 요청 (Overlapped)
 	void ReceivePacket( );

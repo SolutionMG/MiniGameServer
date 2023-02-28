@@ -141,6 +141,8 @@
     <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="PlayerUnit.h" />
     <ClInclude Include="Protocol.h" />
+    <ClInclude Include="RoomManager.h" />
+    <ClInclude Include="RoomUnit.h" />
     <ClInclude Include="Singleton.hpp" />
     <ClInclude Include="UserManager.h" />
   </ItemGroup>
@@ -159,6 +161,8 @@
     </ClCompile>
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="PlayerUnit.cpp" />
+    <ClCompile Include="RoomManager.cpp" />
+    <ClCompile Include="RoomUnit.cpp" />
     <ClCompile Include="UserManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

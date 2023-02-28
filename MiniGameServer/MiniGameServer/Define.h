@@ -12,6 +12,7 @@ namespace InitServer
 	constexpr int UPDATE_AWAKE_MS = 100;
 
 	constexpr int OVERLAPPED_SIZE = 1000;
+	constexpr int MAX_ROOMSIZE = 100;
 }
 
 //Operation Type
