@@ -13,6 +13,7 @@ namespace InitPlayer
 namespace ClientToServer
 {
 	constexpr int LOGIN_REQUEST = 0;
+	constexpr int MOVE = 1;
 }
 // SERVER
 namespace ServerToClient
@@ -31,26 +32,37 @@ struct PacketInfo
 };
 namespace Packet
 {
+	// 로그인 요청
 	struct LoginRequest
 	{
 		PacketInfo info;
 		char name[ InitPlayer::MAX_NAME ];
 		char password[ InitPlayer::MAX_PASSWORD ];
 	};
-
+	// 로그인 결과
 	struct LoginResult
 	{
 		PacketInfo info;
 		char name[ InitPlayer::MAX_NAME ];
-		//승률도 추가될 수 잇음
+		// 승률도 추가될 수 잇음
 	};
 
-	// 미니게임에서의 초기 위치 추가해야 함
+	// 미니게임 씬 전환 요청 및 초기화 정보 전송
 	struct GameStart
 	{
 		PacketInfo info;
-		SOCKET owner; /* 플레이어 구분, 로그인  구현 시 추후 닉네임으로 변경*/
-		short color; /* 0 - red, 1 - blue, 2 - yellow*/
+		SOCKET owner; /* 플레이어 구분, 로그인 구현 시 추후 닉네임으로 변경*/
+		short color; /* 플레이어 고유 색상 0 - red, 1 - blue, 2 - yellow*/
+		// 초기 위치 추가될 예정
+	};
+	
+	struct Move
+	{
+		PacketInfo info;
+		SOCKET owner;
+		float x;
+		float y;
+		float z;
 	};
 }
 #pragma pack(pop)

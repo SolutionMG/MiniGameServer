@@ -69,6 +69,11 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 		}
 	}
 	break;
+	case ClientToServer::MOVE:
+	{
+		//¿Ãµø
+	}
+	break;
 	default:
 	break;
 	}
