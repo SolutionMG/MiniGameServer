@@ -3,7 +3,7 @@
 
 enum class EClientState : char
 {
-	ACCESS, LOGON, MATCHING, GAME, END /*접속, 로그인, 매칭중, 게임중 */
+	ACCESS, LOGON, MATCHING, GAME, DISCONNECT /*접속, 로그인, 매칭중, 게임중, 종료 */
 };
 
 class ClientUnit

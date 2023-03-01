@@ -9,6 +9,15 @@ UserManager::UserManager( )
 	: BaseTaskManager( )
 	, m_users ( )
 {
+	for ( int i = 0; i < InitServer::MAX_PLAYERNUM; ++i )
+	{
+		PlayerUnit* player = new PlayerUnit(INVALID_SOCKET);
+		player->SetName( "Default" );
+		player->SetState( EClientState::DISCONNECT );
+		player->SetPosition( Position( 0.f, 0.f, 0.f ) );
+		player->SetRoomNumber( -1 );
+		m_userPools.push( player );
+	}
 }
 
 UserManager::~UserManager( )
@@ -19,6 +28,13 @@ UserManager::~UserManager( )
 		user = nullptr;
 	}
 	m_users.clear( );
+
+	PlayerUnit* player = nullptr;
+	while ( m_userPools.try_pop( player ) )
+	{
+		delete player;
+		player = nullptr;
+	}
 }
 
 void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
@@ -56,4 +72,31 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 	default:
 	break;
 	}
+}
+
+void UserManager::PushPlayerUnit( PlayerUnit* player )
+{
+	if ( !player )
+		return;
+
+	player->SetName( "default" );
+	player->SetState( EClientState::DISCONNECT );
+	player->SetPosition( Position( 0.f, 0.f, 0.f ) );
+	player->SetRoomNumber( -1 );
+	m_userPools.push( player );
+}
+
+PlayerUnit* UserManager::GetPlayerUnit( )
+{
+	PlayerUnit* player = nullptr;
+	if ( !m_userPools.try_pop( player ) )
+	{
+		player = new PlayerUnit(INVALID_SOCKET);
+		player->SetName( "default" );
+		player->SetState( EClientState::DISCONNECT );
+		player->SetPosition( Position( 0.f, 0.f, 0.f ) );
+		player->SetRoomNumber( -1 );
+	}
+
+	return player;
 }

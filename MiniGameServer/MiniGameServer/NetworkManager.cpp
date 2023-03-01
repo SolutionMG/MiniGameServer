@@ -153,6 +153,20 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 	
 }
 
+void NetworkManager::Disconnect( const SOCKET& socket )
+{
+	UserManager::GetInstance( ).PushTask(
+		[ socket ]( )
+		{
+			// 같은 방 사람들에게 플레이어 종료 정보 전송 
+			
+			//유저객체 유저풀에 전달
+			auto& users = UserManager::GetInstance( ).GetUsers( );
+			UserManager::GetInstance( ).PushPlayerUnit( users[ socket ] );
+			users.erase( socket );
+		} );
+}
+
 bool NetworkManager::Accept( WSAOVERLAPPED_EXTEND* over )
 {
 	SOCKET socket = WSASocket( AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED );
@@ -208,7 +222,7 @@ void NetworkManager::MainWorkProcess( )
 		{
 			if ( bytes == 0 || returnValue == false )
 			{
-				//Disconnect( userKey );
+				Disconnect( userKey );
 				break;
 			}
 			
@@ -220,7 +234,7 @@ void NetworkManager::MainWorkProcess( )
 		{
 			if ( bytes == 0 || returnValue == false )
 			{
-				//Disconnect( userKey );
+				Disconnect( userKey );
 				break;
 			}
 			OverlappedManager::GetInstance( ).PushOverlapped( overExtend );
@@ -231,7 +245,7 @@ void NetworkManager::MainWorkProcess( )
 		{
 			if ( returnValue == false )
 			{
-				//Disconnect( userKey );
+				Disconnect( userKey );
 				break;
 			}
 
@@ -246,7 +260,8 @@ void NetworkManager::MainWorkProcess( )
 					const int userCount = static_cast< int >( users.size( ) );
 					if ( userCount > InitServer::MAX_PLAYERNUM )
 					{
-						users[ userKey ] = new PlayerUnit( userKey );
+						users[ userKey ] = UserManager::GetInstance().GetPlayerUnit();
+						users[ userKey ]->SetSocket( userKey );
 						users[ userKey ]->SetOverlappedOperation( EOperationType::RECV );
 						users[ userKey ]->SetState( EClientState::ACCESS ); 
 

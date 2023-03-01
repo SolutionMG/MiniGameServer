@@ -20,7 +20,7 @@ public:
 	bool Listen( );
 	bool RunServer( );
 	void ReassemblePacket( char* packet, const DWORD& bytes, const SOCKET& socket );
-
+	void Disconnect(const SOCKET& socket );
 	// Set
 
 

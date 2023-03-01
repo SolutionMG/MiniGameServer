@@ -9,7 +9,7 @@ namespace InitServer
 	constexpr unsigned short MAX_PACKETSIZE = 255;
 	constexpr unsigned short MAX_PLAYERNUM = 99;
 
-	constexpr int UPDATE_AWAKE_MS = 100;
+	constexpr int UPDATE_AWAKE_MS = 50;
 
 	constexpr int OVERLAPPED_SIZE = 1000;
 	constexpr int MAX_ROOMSIZE = 100;
