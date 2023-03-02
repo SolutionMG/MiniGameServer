@@ -7,7 +7,6 @@
 #include "RoomManager.h"
 #include "RoomUnit.h"
 #include "PlayerUnit.h"
-#include "Protocol.h"
 #include "Log.h"
 
 NetworkManager::NetworkManager( ) : m_listenSocket( INVALID_SOCKET ), m_iocpHandle( NULL )
@@ -139,9 +138,9 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 		}
 		else
 		{
-			char completePacket[ InitServer::MAX_PACKETSIZE ];
+			char completePacket[ InitPacket::MAX_PACKETSIZE ];
 			memcpy_s( completePacket, sizeof( completePacket ), packet, packetSize );
-			memcpy_s( packet, sizeof( InitServer::MAX_BUFFERSIZE ), packet + packetSize, ( byte + startReceive - packetSize ) );
+			memcpy_s( packet, sizeof( InitPacket::MAX_BUFFERSIZE ), packet + packetSize, ( byte + startReceive - packetSize ) );
 
 			///Process Packet
 			UserManager::GetInstance( ).ProcessPacket( socket, completePacket );
@@ -163,6 +162,7 @@ void NetworkManager::Disconnect( const SOCKET& socket )
 			//유저객체 유저풀에 전달
 			auto& users = UserManager::GetInstance( ).GetUsers( );
 			UserManager::GetInstance( ).PushPlayerUnit( users[ socket ] );
+			UserManager::GetInstance().PushPlayerId( users[ socket ]->GetId() );
 			users.erase( socket );
 		} );
 }
@@ -264,6 +264,7 @@ void NetworkManager::MainWorkProcess( )
 						users[ userKey ]->SetSocket( userKey );
 						users[ userKey ]->SetOverlappedOperation( EOperationType::RECV );
 						users[ userKey ]->SetState( EClientState::ACCESS ); 
+						users[ userKey ]->SetId( UserManager::GetInstance().GetPlayerId() );
 
 						HANDLE returnValue2 = CreateIoCompletionPort( reinterpret_cast< HANDLE >( userKey ), NetworkManager::GetInstance().GetIocpHandle(), userKey, 0 );
 						if ( returnValue2 == NULL )

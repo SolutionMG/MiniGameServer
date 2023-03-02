@@ -1,6 +1,12 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
+namespace InitPacket
+{
+	constexpr unsigned short MAX_BUFFERSIZE = 1024;
+	constexpr unsigned short MAX_PACKETSIZE = 255;
+}
+
 namespace InitPlayer
 {
 	constexpr int MAX_NAME = 16;
@@ -21,6 +27,7 @@ namespace ServerToClient
 	constexpr int LOGON_OK = 0;
 	constexpr int LOGON_FAILED = 1;
 	constexpr int GAMESTART = 2; 
+	constexpr int MOVE = 3;
 }
 
 // PACKET DECLARE
@@ -51,7 +58,7 @@ namespace Packet
 	struct GameStart
 	{
 		PacketInfo info;
-		SOCKET owner; /* 플레이어 구분, 로그인 구현 시 추후 닉네임으로 변경*/
+		int owner; /* 플레이어 구분, 로그인 구현 시 추후 닉네임으로 변경*/
 		short color; /* 플레이어 고유 색상 0 - red, 1 - blue, 2 - yellow*/
 		// 초기 위치 추가될 예정
 	};
@@ -59,7 +66,7 @@ namespace Packet
 	struct Move
 	{
 		PacketInfo info;
-		SOCKET owner;
+		int owner;
 		float speed;
 		float x;
 		float y;

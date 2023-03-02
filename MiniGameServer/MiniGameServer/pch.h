@@ -19,6 +19,7 @@
 
 
 //User
+#include "Protocol.h"
 #include"Define.h"
 
 #endif // !PCH_H

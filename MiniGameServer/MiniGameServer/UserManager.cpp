@@ -3,7 +3,6 @@
 #include "PlayerUnit.h"
 #include "RoomUnit.h"
 #include "Log.h"
-#include "Protocol.h"
 #include "DataBaseManager.h"
 #include "RoomManager.h"
 
@@ -18,7 +17,13 @@ UserManager::UserManager( )
 		player->SetState( EClientState::DISCONNECT );
 		player->SetPosition( Position( 0.f, 0.f, 0.f ) );
 		player->SetRoomNumber( -1 );
+		player->SetId( -1 );
 		m_userPools.push( player );
+	}
+
+	for ( int i = 0; i < InitServer::MAX_PLAYERNUM; ++i )
+	{
+		m_pIdPools.push( i );
 	}
 }
 
@@ -113,7 +118,16 @@ void UserManager::PushPlayerUnit( PlayerUnit* player )
 	player->SetState( EClientState::DISCONNECT );
 	player->SetPosition( Position( 0.f, 0.f, 0.f ) );
 	player->SetRoomNumber( -1 );
+	player->SetId( -1 );
+
 	m_userPools.push( player );
+}
+
+void UserManager::PushPlayerId( const int& id )
+{
+	if ( id < 0 )
+		return;
+	m_pIdPools.push( id );
 }
 
 PlayerUnit* UserManager::GetPlayerUnit( )
@@ -126,7 +140,20 @@ PlayerUnit* UserManager::GetPlayerUnit( )
 		player->SetState( EClientState::DISCONNECT );
 		player->SetPosition( Position( 0.f, 0.f, 0.f ) );
 		player->SetRoomNumber( -1 );
+		player->SetId( -1 );
 	}
 
 	return player;
+}
+
+const int& UserManager::GetPlayerId()
+{
+	// TODO: 여기에 return 문을 삽입합니다.
+	int id = -1;
+	if ( !m_pIdPools.try_pop( id ) )
+	{
+		id = m_pIdPools.unsafe_size();
+		++id;
+	}
+	return id;
 }

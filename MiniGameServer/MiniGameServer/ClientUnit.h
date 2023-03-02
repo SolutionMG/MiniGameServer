@@ -10,6 +10,7 @@ class ClientUnit
 {
 protected:
 	SOCKET m_socket;
+	int m_pId;
 	WSAOVERLAPPED_EXTEND m_over;
 	EClientState m_state;
 
@@ -31,6 +32,7 @@ public:
 	void SetState( const EClientState& state )							{ m_state = state; }
 	void SetPreviousReceivePosition( const int& position )				{ m_previousReceivePosition = position; }
 	void SetRoomNumber( const int& roomNum )							{ m_roomNumber = roomNum; }
+	void SetId( const int& id )											{ m_pId = id; }
 
 	///Get 
 	const SOCKET& GetSocket( )											{ return m_socket; }
@@ -38,6 +40,7 @@ public:
 	const EClientState& GetState( ) const								{ return m_state; }
 	const int& GetPreviousReceivePosition( )							{ return m_previousReceivePosition; }
 	const int& GetRoomNum( )											{ return m_roomNumber; }
+	const int& GetId()													{ return m_pId; }
 
 	///패킷 송수신 요청 (Overlapped)
 	void ReceivePacket( );

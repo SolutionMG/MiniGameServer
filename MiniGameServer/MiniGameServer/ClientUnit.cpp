@@ -4,13 +4,14 @@
 
 ClientUnit::ClientUnit( const SOCKET& socket )
 	: m_socket( socket )
-	, m_over( )
+	, m_over()
 	, m_state( EClientState::DISCONNECT )
-	, m_previousReceivePosition ( 0 )
+	, m_previousReceivePosition( 0 )
 	, m_roomNumber( -1 )
+	, m_pId( -1 )
 {
 	m_over.wsaBuffer.buf = m_over.networkBuffer;
-	m_over.wsaBuffer.len = InitServer::MAX_BUFFERSIZE;
+	m_over.wsaBuffer.len = InitPacket::MAX_BUFFERSIZE;
 }
 
 ClientUnit::~ClientUnit( ) noexcept = default;
@@ -21,7 +22,7 @@ void ClientUnit::ReceivePacket( )
 	m_receiveLock.lock( );
 	ZeroMemory( &m_over, sizeof( m_over ) );
 	m_over.wsaBuffer.buf = m_over.networkBuffer + m_previousReceivePosition;
-	m_over.wsaBuffer.len = InitServer::MAX_BUFFERSIZE;
+	m_over.wsaBuffer.len = InitPacket::MAX_BUFFERSIZE;
 	m_over.type = EOperationType::RECV;
 	DWORD flag = 0;
 	WSARecv( m_socket, &m_over.wsaBuffer, 1, NULL, &flag, &m_over.over, NULL );

@@ -13,10 +13,11 @@ class UserManager final
 {
 private:
 	// 접속 유저 관리
-	std::unordered_map<SOCKET /*Key*/, PlayerUnit*> m_users;
+	std::unordered_map<SOCKET /*Key*/, PlayerUnit*>	m_users;
 
 	// 유저 객체 메모리 풀링
-	concurrency::concurrent_queue<PlayerUnit*> m_userPools;
+	concurrency::concurrent_queue<PlayerUnit*>		m_userPools;
+	concurrency::concurrent_queue<int>				m_pIdPools;
 
 public:
 	explicit UserManager( );
@@ -29,6 +30,7 @@ public:
 	
 	// 종료한 유저 객체 유저풀 관리 변수에 반환
 	void PushPlayerUnit( PlayerUnit* player );
+	void PushPlayerId( const int& id );
 
 	// Get
 	virtual const int GetAwakeInterval( ) const noexcept final	{ return InitServer::UPDATE_AWAKE_MS; };
@@ -37,6 +39,7 @@ public:
 
 	//접속 유저 객체, 유저풀에서 객체 꺼내 전달
 	PlayerUnit* GetPlayerUnit( );
+	const int& GetPlayerId();
 
 };
 
