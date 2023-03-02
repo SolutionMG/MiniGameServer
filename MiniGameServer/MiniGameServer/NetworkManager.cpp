@@ -90,6 +90,9 @@ bool NetworkManager::RunServer( )
 		return false;
 	}
 	
+	WSAOVERLAPPED_EXTEND over;
+	Accept( &over );
+
 	// 메인 워크 프로세스 연결, accept, receive, send 
 	std::vector< std::thread > workerThreads;
 	for ( int i = 0; i < ( InitServer::TOTALCORE / 2 ); ++i )
@@ -98,7 +101,8 @@ bool NetworkManager::RunServer( )
 	}
 	
 	// DataBaseManager::GetInstance( );
-	UserManager::GetInstance( ).Run( );
+	UserManager::GetInstance().Run();
+	RoomManager::GetInstance().Run();
 
 	for ( auto& wthread : workerThreads )
 	{
@@ -145,7 +149,7 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 			///Process Packet
 			UserManager::GetInstance( ).ProcessPacket( socket, completePacket );
 			users[ socket ]->SetPreviousReceivePosition( static_cast< unsigned char >( byte + startReceive - packetSize ) );
-		}
+		}                             
 
 		users[ socket ]->ReceivePacket( );
 	} );
@@ -161,6 +165,8 @@ void NetworkManager::Disconnect( const SOCKET& socket )
 			
 			//유저객체 유저풀에 전달
 			auto& users = UserManager::GetInstance( ).GetUsers( );
+			std::cout << users[ socket ]->GetId() << " 유저 접속 종료" << std::endl;
+
 			UserManager::GetInstance( ).PushPlayerUnit( users[ socket ] );
 			UserManager::GetInstance().PushPlayerId( users[ socket ]->GetId() );
 			users.erase( socket );
@@ -258,13 +264,17 @@ void NetworkManager::MainWorkProcess( )
 				{
 					auto& users = UserManager::GetInstance( ).GetUsers( );
 					const int userCount = static_cast< int >( users.size( ) );
-					if ( userCount > InitServer::MAX_PLAYERNUM )
+					if ( userCount <= InitServer::MAX_PLAYERNUM )
 					{
 						users[ userKey ] = UserManager::GetInstance().GetPlayerUnit();
 						users[ userKey ]->SetSocket( userKey );
 						users[ userKey ]->SetOverlappedOperation( EOperationType::RECV );
 						users[ userKey ]->SetState( EClientState::ACCESS ); 
 						users[ userKey ]->SetId( UserManager::GetInstance().GetPlayerId() );
+
+						Packet::FirstPlayer packet( users[ userKey ]->GetId() );
+
+						users[ userKey ]->SendPacket( packet );
 
 						HANDLE returnValue2 = CreateIoCompletionPort( reinterpret_cast< HANDLE >( userKey ), NetworkManager::GetInstance().GetIocpHandle(), userKey, 0 );
 						if ( returnValue2 == NULL )
@@ -289,7 +299,6 @@ void NetworkManager::MainWorkProcess( )
 						if ( roomUnit.GetPlayers( ).size( ) == 3 )
 							continue;
 						roomNum = roomIndex;
-						roomUnit.PushPlayer( userKey );
 						break;
 					}
 					// 방 새로 생성 - 3명 이하인 방이 없을 시 
@@ -297,7 +306,7 @@ void NetworkManager::MainWorkProcess( )
 					{
 						roomNum = RoomManager::GetInstance( ).GetNewRoomNumber( );
 					}
-					auto& currentRoom = rooms[ roomNum ];
+ 					auto& currentRoom = rooms[ roomNum ];
 					
 					// 방에 접속 유저 추가
 					currentRoom.PushPlayer( userKey );
@@ -313,6 +322,7 @@ void NetworkManager::MainWorkProcess( )
 					// 현재 방에 3명 존재 시 게임 시작
 					if ( currentRoom.GetPlayers( ).size( ) == 3 )
 					{
+						std::cout << "방에 3명 입장, 게임 시작 패킷 전송" << std::endl;
 						int color = 0;
 						// 방에 있는 플레이어들에게 각각의 플레이어들 초기 정보 전송 (고유 색, 이름 등)
 						for ( const auto& player : currentRoom.GetPlayers( ) )
@@ -322,15 +332,19 @@ void NetworkManager::MainWorkProcess( )
 								UserManager::GetInstance( ).PushTask(
 									[ player, other, &color ]( )
 									{
-										auto& user = UserManager::GetInstance( ).GetUsers( )[ other ];
-										user->SetState( EClientState::GAME );
+									
+										auto& user = UserManager::GetInstance( ).GetUsers( );
+										if ( user.find( other ) == user.end() )
+										{
+											PRINT_LOG( "user == nullptr" );
+											return;
+										}
+	
+										user[other]->SetState(EClientState::GAME);
 										// 게임 시작 요청 클라이언트에게 보내기
-										Packet::GameStart packet;
-										packet.info.size = sizeof( packet );
-										packet.info.type = ServerToClient::GAMESTART;
-										packet.owner = player;
+										Packet::GameStart packet( user[player]->GetId());
 										packet.color = color;
-										user->SendPacket( reinterpret_cast< const char* >( &packet ) );
+										user[other]->SendPacket( packet );
 									} );
 							}
 							++color;

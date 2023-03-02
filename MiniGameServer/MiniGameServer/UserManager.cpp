@@ -56,30 +56,26 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 	case ClientToServer::LOGIN_REQUEST:
 	{
 		// 로그인 요청 후 
-		Packet::LoginRequest* data = reinterpret_cast< Packet::LoginRequest* > ( packet );
+		Packet::LoginRequest data = *reinterpret_cast< Packet::LoginRequest* > ( packet );
 		int baseScore = 0;
-		if ( DataBaseManager::GetInstance( ).LogOn( data->name, data->password, baseScore ) )
+		if ( DataBaseManager::GetInstance( ).LogOn( data.name, data.password, baseScore ) )
 		{
-			Packet::LoginResult send;
-			send.info.size = sizeof( Packet::LoginResult );
-			send.info.type = ServerToClient::LOGON_OK;
-			strcpy_s( send.name, data->name );
-			m_users[ socket ]->SendPacket( reinterpret_cast< const char* >( &send ) );
+			Packet::LoginResult send(socket, ServerToClient::LOGON_OK);
+			strcpy_s( send.name, data.name );
+			m_users[ socket ]->SendPacket( send  );
 		}
 		else
 		{
-			Packet::LoginResult send;
-			send.info.size = sizeof( Packet::LoginResult );
-			send.info.type = ServerToClient::LOGON_FAILED;
-			strcpy_s( send.name, data->name );
-			m_users[ socket ]->SendPacket( reinterpret_cast< const char* >( &send ) );
+			Packet::LoginResult send( socket, ServerToClient::LOGON_FAILED );
+			strcpy_s( send.name, data.name );
+			m_users[ socket ]->SendPacket( send );
 		}
 	}
 	break;
 	case ClientToServer::MOVE:
 	{
-		Packet::Move* send = reinterpret_cast< Packet::Move* > ( packet );
-		
+		Packet::Move send = *reinterpret_cast< Packet::Move* > ( packet );
+		send.info.type = ServerToClient::MOVE;
 		//검증필요
 
 		//이동
@@ -98,7 +94,7 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 				if ( index == socket )
 					continue;
 
-				m_users[ index ]->SendPacket( reinterpret_cast< const char* >( &send ) );
+				m_users[ index ]->SendPacket( send );
 			}
 		}
 		

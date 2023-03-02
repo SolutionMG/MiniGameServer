@@ -12,10 +12,9 @@ class RoomUnit;
 
 class RoomManager final 
 	: public BaseTaskManager
-	, public Base::TSingleton <RoomManager>
+	, public Base::TSingleton< RoomManager >
 {
 private:
-	std::mutex m_lock;
 	std::unordered_map<int /*room number*/, RoomUnit>	m_rooms;
 	//방 번호 풀링
 	concurrency::concurrent_queue<int>	m_roomPools;
@@ -28,11 +27,10 @@ public:
 	// Set
 
 	// Get
-	virtual const int GetAwakeInterval( ) const noexcept final { return InitServer::UPDATE_AWAKE_MS; }
-	virtual const std::string GetName( ) const noexcept final  { return  "RoomManager"; }	
-	std::unordered_map<int, RoomUnit>& GetRooms( ) { return m_rooms; }
-	const int& GetNewRoomNumber( );
-	std::mutex& GetLock( ){ return m_lock; }
+	virtual const int GetAwakeInterval() const noexcept final { return InitServer::UPDATE_AWAKE_MS; }
+	virtual const std::string GetName() const noexcept final  { return  "RoomManager"; }	
+	std::unordered_map< int, RoomUnit >& GetRooms() { return m_rooms; }
+	const int& GetNewRoomNumber();
 };
 
 #endif

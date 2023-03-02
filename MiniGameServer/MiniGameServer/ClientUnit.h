@@ -19,7 +19,6 @@ protected:
 
 	int m_previousReceivePosition;
 
-	std::mutex m_receiveLock;
 
 public:
 	explicit ClientUnit( const SOCKET& socket);
@@ -43,9 +42,16 @@ public:
 	const int& GetId()													{ return m_pId; }
 
 	///패킷 송수신 요청 (Overlapped)
-	void ReceivePacket( );
-	void SendPacket( const char* packet );
+	void ReceivePacket();
 
+	template< class PacketType >
+	void SendPacket( const PacketType& packet )
+	{
+		_SendPacket( reinterpret_cast< const char* >( &packet ), packet.info.size );
+	}
+
+private:
+	void _SendPacket( const char* packet, const char size );
 
 };
 

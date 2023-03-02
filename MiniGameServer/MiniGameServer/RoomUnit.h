@@ -6,7 +6,6 @@ class RoomUnit final
 {
 private:
 	std::vector<SOCKET> m_players;
-	std::mutex m_lock;
 public:
 	explicit RoomUnit( ) = default;
 	virtual ~RoomUnit( ) = default;
@@ -19,7 +18,6 @@ public:
 
 	//get
 	const std::vector<SOCKET>& GetPlayers( ) {return m_players;}
-	std::mutex& GetLock() { return m_lock; }
 
 };
 

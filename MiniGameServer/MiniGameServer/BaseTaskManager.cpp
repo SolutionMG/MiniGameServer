@@ -22,7 +22,7 @@ void BaseTaskManager::Run( )
             while ( !stoken.stop_requested( ) )
             {
                 WorkTask( );
-                std::this_thread::sleep_for( static_cast< std::chrono::milliseconds >( InitServer::UPDATE_AWAKE_MS ) );
+                //std::this_thread::sleep_for( static_cast< std::chrono::milliseconds >( InitServer::UPDATE_AWAKE_MS ) );
             }
         } );
 }
