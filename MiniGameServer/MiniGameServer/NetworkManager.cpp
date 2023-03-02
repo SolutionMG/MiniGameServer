@@ -98,7 +98,7 @@ bool NetworkManager::RunServer( )
 		workerThreads.emplace_back( [ & ]( ) { MainWorkProcess( ); } );
 	}
 	
-	DataBaseManager::GetInstance( );
+	// DataBaseManager::GetInstance( );
 	UserManager::GetInstance( ).Run( );
 
 	for ( auto& wthread : workerThreads )

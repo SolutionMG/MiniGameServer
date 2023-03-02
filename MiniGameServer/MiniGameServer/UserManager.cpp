@@ -1,9 +1,11 @@
 #include "pch.h"
 #include "UserManager.h"
 #include "PlayerUnit.h"
+#include "RoomUnit.h"
 #include "Log.h"
 #include "Protocol.h"
 #include "DataBaseManager.h"
+#include "RoomManager.h"
 
 UserManager::UserManager( )
 	: BaseTaskManager( )
@@ -71,7 +73,30 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 	break;
 	case ClientToServer::MOVE:
 	{
+		Packet::Move* send = reinterpret_cast< Packet::Move* > ( packet );
+		
+		//검증필요
+
 		//이동
+		int roomNum = m_users[ socket ]->GetRoomNum();
+		{
+			auto& rooms = RoomManager::GetInstance().GetRooms();
+
+			if ( rooms.find( roomNum ) == rooms.end() )
+				return;
+
+			auto& players = rooms[ roomNum ].GetPlayers();
+
+			// 같은 방에 있는 플레이어들에게 정보 전송
+			for ( const auto& index : players )
+			{
+				if ( index == socket )
+					continue;
+
+				m_users[ index ]->SendPacket( reinterpret_cast< const char* >( &send ) );
+			}
+		}
+		
 	}
 	break;
 	default:

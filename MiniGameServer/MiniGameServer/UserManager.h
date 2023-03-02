@@ -11,6 +11,13 @@ class UserManager final
 	: public BaseTaskManager
 	, public Base::TSingleton < UserManager >
 {
+private:
+	// 접속 유저 관리
+	std::unordered_map<SOCKET /*Key*/, PlayerUnit*> m_users;
+
+	// 유저 객체 메모리 풀링
+	concurrency::concurrent_queue<PlayerUnit*> m_userPools;
+
 public:
 	explicit UserManager( );
 	virtual ~UserManager( );
@@ -31,12 +38,6 @@ public:
 	//접속 유저 객체, 유저풀에서 객체 꺼내 전달
 	PlayerUnit* GetPlayerUnit( );
 
-private:
-	// 접속 유저 관리
-	std::unordered_map<SOCKET /*Key*/, PlayerUnit*> m_users;
-
-	// 유저 객체 메모리 풀링
-	concurrency::concurrent_queue<PlayerUnit*> m_userPools; 
 };
 
 #endif // !USERMANAGER_H

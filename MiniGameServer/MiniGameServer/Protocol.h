@@ -60,9 +60,13 @@ namespace Packet
 	{
 		PacketInfo info;
 		SOCKET owner;
+		float speed;
 		float x;
 		float y;
 		float z;
+		float directionX;
+		float directtionY;
+		float directionZ;
 	};
 }
 #pragma pack(pop)
