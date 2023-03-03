@@ -25,6 +25,7 @@ public:
 
 public:
 	// Set
+	void PushRoomNumber(const int& number);
 
 	// Get
 	virtual const int GetAwakeInterval() const noexcept final { return InitServer::UPDATE_AWAKE_MS; }

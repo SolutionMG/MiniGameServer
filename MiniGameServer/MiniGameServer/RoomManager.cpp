@@ -12,9 +12,17 @@ RoomManager::RoomManager( )
 	}
 }
 
+void RoomManager::PushRoomNumber( const int& number )
+{
+	m_roomPools.push( number );
+}
+
 const int& RoomManager::GetNewRoomNumber( )
 {
 	int room = -1;
-	m_roomPools.try_pop( room );
+	if ( !m_roomPools.try_pop( room ) )
+	{
+		room = m_roomPools.unsafe_size() + 1;
+	}
 	return room;
 }

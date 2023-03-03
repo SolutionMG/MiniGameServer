@@ -18,17 +18,17 @@ namespace InitPlayer
 // CLIENT
 namespace ClientToServer
 {
-	constexpr int LOGIN_REQUEST = 0;
-	constexpr int MOVE = 1;
+	constexpr short LOGIN_REQUEST = 0;
+	constexpr short MOVE = 1;
 }
 // SERVER
 namespace ServerToClient
 {
-	constexpr int FIRSTINFO = -1;
-	constexpr int LOGON_OK = 0;
-	constexpr int LOGON_FAILED = 1;
-	constexpr int GAMESTART = 2; 
-	constexpr int MOVE = 3;
+	constexpr short FIRSTINFO = -1;
+	constexpr short LOGON_OK = 0;
+	constexpr short LOGON_FAILED = 1;
+	constexpr short GAMESTART = 2; 
+	constexpr short MOVE = 3;
 }
 
 // PACKET DECLARE
@@ -84,7 +84,7 @@ namespace Packet
 		int owner;
 
 		// ½Â·üµµ Ãß°¡µÉ ¼ö ÀÕÀ½
-		LoginResult( const int owner, const int type )
+		LoginResult( const int owner, const int type/*Login Failed, Login Ok*/)
 			: info( sizeof( LoginResult ), type )
 			, owner( owner ), name()
 		{}
@@ -116,7 +116,7 @@ namespace Packet
 		float directionY;
 		float directionZ;
 
-		Move( const int owner, const int type )
+		Move( const int owner, const int type/*ClientToServer::Move, ServerToClient::Move*/)
 			: info( sizeof( Move ), type )
 			, owner( owner ), speed(), x(), y(), z(), directionX(), directionY(), directionZ()
 		{}

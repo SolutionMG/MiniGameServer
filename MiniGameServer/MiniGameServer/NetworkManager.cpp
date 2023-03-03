@@ -158,18 +158,45 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 
 void NetworkManager::Disconnect( const SOCKET& socket )
 {
-	UserManager::GetInstance( ).PushTask(
-		[ socket ]( )
+	//방에서 종료한 플레이어 삭제
+	RoomManager::GetInstance().PushTask(
+		[ socket ]()
 		{
-			// 같은 방 사람들에게 플레이어 종료 정보 전송 
+			auto& users = UserManager::GetInstance().GetUsers();
 			
-			//유저객체 유저풀에 전달
-			auto& users = UserManager::GetInstance( ).GetUsers( );
-			std::cout << users[ socket ]->GetId() << " 유저 접속 종료" << std::endl;
+			if ( users.find( socket ) == users.end() )
+				return;
+			if ( !users[ socket ] )
+				return;
 
-			UserManager::GetInstance( ).PushPlayerUnit( users[ socket ] );
-			UserManager::GetInstance().PushPlayerId( users[ socket ]->GetId() );
-			users.erase( socket );
+			int id = users[ socket ]->GetId();
+			int roomNum = users[ socket ]->GetRoomNum();
+
+			RoomManager::GetInstance().GetRooms()[ roomNum ].PopPlayer( socket );
+			if ( RoomManager::GetInstance().GetRooms()[ roomNum ].GetPlayers().empty() )
+			{
+				RoomManager::GetInstance().GetRooms().erase( roomNum );
+				RoomManager::GetInstance().PushRoomNumber( roomNum );
+				std::cout << "방 삭제" << std::endl;
+			}
+			else
+			{
+				//같은 방 플레이어들에게 종료한 플레이어 알림
+			}
+			//접속 종료 플레이어 유저 관리 객체에서 삭제
+			UserManager::GetInstance().PushTask(
+				[ socket ]()
+				{
+					// 같은 방 사람들에게 플레이어 종료 정보 전송 
+
+					//유저객체 유저풀에 전달
+					auto& users = UserManager::GetInstance().GetUsers();
+					std::cout << users[ socket ]->GetId() << " 유저 접속 종료" << std::endl;
+
+					UserManager::GetInstance().PushPlayerUnit( users[ socket ] );
+					UserManager::GetInstance().PushPlayerId( users[ socket ]->GetId() );
+					users.erase( socket );
+				} );
 		} );
 }
 
@@ -323,32 +350,31 @@ void NetworkManager::MainWorkProcess( )
 					if ( currentRoom.GetPlayers( ).size( ) == 3 )
 					{
 						std::cout << "방에 3명 입장, 게임 시작 패킷 전송" << std::endl;
-						int color = 0;
 						// 방에 있는 플레이어들에게 각각의 플레이어들 초기 정보 전송 (고유 색, 이름 등)
-						for ( const auto& player : currentRoom.GetPlayers( ) )
-						{
-							for ( const auto& other : currentRoom.GetPlayers( ) )
+						const std::vector<SOCKET> others = currentRoom.GetPlayers();
+						UserManager::GetInstance().PushTask(
+							[ userKey, others ]()
 							{
-								UserManager::GetInstance( ).PushTask(
-									[ player, other, &color ]( )
+								auto& user = UserManager::GetInstance().GetUsers();
+								if ( user.find( userKey ) == user.end() )
+								{
+									PRINT_LOG( "user == nullptr" );
+									return;
+								}
+								int color = 0;
+								for ( const auto& player : others )
+								{
+									for ( const auto& other : others )
 									{
-									
-										auto& user = UserManager::GetInstance( ).GetUsers( );
-										if ( user.find( other ) == user.end() )
-										{
-											PRINT_LOG( "user == nullptr" );
-											return;
-										}
-	
-										user[other]->SetState(EClientState::GAME);
+										user[ other ]->SetState( EClientState::GAME );
 										// 게임 시작 요청 클라이언트에게 보내기
-										Packet::GameStart packet( user[player]->GetId());
+										Packet::GameStart packet( user[ player ]->GetId() );
 										packet.color = color;
-										user[other]->SendPacket( packet );
-									} );
-							}
-							++color;
-						}
+										user[ other ]->SendPacket( packet );
+									}
+									++color;
+								}
+							} );
 					}
 				} );
 
