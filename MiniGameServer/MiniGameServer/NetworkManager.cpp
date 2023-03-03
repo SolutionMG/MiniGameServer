@@ -103,6 +103,7 @@ bool NetworkManager::RunServer( )
 	// DataBaseManager::GetInstance( );
 	UserManager::GetInstance().Run();
 	RoomManager::GetInstance().Run();
+	RoomManager::GetInstance().RunTimer();
 
 	for ( auto& wthread : workerThreads )
 	{
@@ -361,7 +362,8 @@ void NetworkManager::MainWorkProcess( )
 									PRINT_LOG( "user == nullptr" );
 									return;
 								}
-								int color = 0;
+								int count = 0;
+								
 								for ( const auto& player : others )
 								{
 									for ( const auto& other : others )
@@ -369,10 +371,11 @@ void NetworkManager::MainWorkProcess( )
 										user[ other ]->SetState( EClientState::GAME );
 										// 게임 시작 요청 클라이언트에게 보내기
 										Packet::GameStart packet( user[ player ]->GetId() );
-										packet.color = color;
+										packet.color = count;
+										packet.x = InitPlayer::INITPOSITION_X + InitPlayer::INITINTERVAL * count;
 										user[ other ]->SendPacket( packet );
 									}
-									++color;
+									++count;
 								}
 							} );
 					}

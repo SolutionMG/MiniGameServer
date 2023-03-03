@@ -39,7 +39,7 @@ public:
 
 	//접속 유저 객체, 유저풀에서 객체 꺼내 전달
 	PlayerUnit* GetPlayerUnit( );
-	const int& GetPlayerId();
+	const int GetPlayerId();
 
 };
 

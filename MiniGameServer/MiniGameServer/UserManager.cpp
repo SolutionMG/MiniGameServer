@@ -51,22 +51,25 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 		PRINT_LOG( "packet == nullptr" );
 		return;
 	}
+
 	switch ( packet[1] )
 	{
 	case ClientToServer::LOGIN_REQUEST:
 	{
 		// 로그인 요청 후 
+		int id = m_users[ socket ]->GetId();
+
 		Packet::LoginRequest data = *reinterpret_cast< Packet::LoginRequest* > ( packet );
 		int baseScore = 0;
 		if ( DataBaseManager::GetInstance( ).LogOn( data.name, data.password, baseScore ) )
 		{
-			Packet::LoginResult send(socket, ServerToClient::LOGON_OK);
+			Packet::LoginResult send( id, ServerToClient::LOGON_OK);
 			strcpy_s( send.name, data.name );
 			m_users[ socket ]->SendPacket( send  );
 		}
 		else
 		{
-			Packet::LoginResult send( socket, ServerToClient::LOGON_FAILED );
+			Packet::LoginResult send( id, ServerToClient::LOGON_FAILED );
 			strcpy_s( send.name, data.name );
 			m_users[ socket ]->SendPacket( send );
 		}
@@ -142,13 +145,13 @@ PlayerUnit* UserManager::GetPlayerUnit( )
 	return player;
 }
 
-const int& UserManager::GetPlayerId()
+const int UserManager::GetPlayerId()
 {
 	// TODO: 여기에 return 문을 삽입합니다.
 	int id = -1;
 	if ( !m_pIdPools.try_pop( id ) )
 	{
-		id = m_pIdPools.unsafe_size();
+		id = static_cast< int >( m_pIdPools.unsafe_size() );
 		++id;
 	}
 	return id;

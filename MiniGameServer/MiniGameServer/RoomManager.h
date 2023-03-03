@@ -19,17 +19,30 @@ private:
 	//방 번호 풀링
 	concurrency::concurrent_queue<int>	m_roomPools;
 
+	concurrency::concurrent_queue<int> m_updateRoomTimers;
+	std::jthread m_timerThread;
+
 public:
 	explicit RoomManager( );
 	virtual ~RoomManager( ) = default;
 
-public:
+	// 타이머 쓰레드 활성화
+	void RunTimer();
+	// 방 타이머 업데이트 
+	void UpdateRoomTimer();
+
 	// Set
+	// 방 번호를 방 번호 풀링 객체에 반환
 	void PushRoomNumber(const int& number);
+	// 해당 방의 타이머 갱신
+	void PushTimer(const int& roomNum);
 
 	// Get
+	// 쓰레드 깨우는 간격 반환
 	virtual const int GetAwakeInterval() const noexcept final { return InitServer::UPDATE_AWAKE_MS; }
+	// 쓰레드 이름 반환
 	virtual const std::string GetName() const noexcept final  { return  "RoomManager"; }	
+	// 방 관리 객체 반환
 	std::unordered_map< int, RoomUnit >& GetRooms() { return m_rooms; }
 	const int& GetNewRoomNumber();
 };
