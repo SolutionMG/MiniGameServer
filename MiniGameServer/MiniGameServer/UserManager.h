@@ -5,6 +5,8 @@
 #include "Singleton.hpp"
 #include "BaseTaskManager.h"
 
+#include <functional>
+
 class PlayerUnit;
 
 class UserManager final
@@ -19,13 +21,14 @@ private:
 	concurrency::concurrent_queue<PlayerUnit*>		m_userPools;
 	concurrency::concurrent_queue<int>				m_pIdPools;
 
+	//커맨드 접근
+	std::unordered_map<short, std::function<void( const SOCKET& socket, char* packet )>> m_processFunctions;
 public:
 	explicit UserManager( );
 	virtual ~UserManager( );
 
 public:
 
-	void ProcessPacket( const SOCKET& socket, char* packet );
 	// Set
 	
 	// 종료한 유저 객체 유저풀 관리 변수에 반환
@@ -40,6 +43,17 @@ public:
 	//접속 유저 객체, 유저풀에서 객체 꺼내 전달
 	PlayerUnit* GetPlayerUnit( );
 	const int GetPlayerId();
+
+	// Packet 처리 호출 함수
+	void ProcessPacket( const SOCKET& socket, char* packet );
+
+	// ProcessPacket에서 호출할 처리 함수들 추가
+	void AddProcess( );
+
+	// 패킷 타입에따른 처리 함수들
+	void ProcessLoginRequest( const SOCKET& socket, char* packet );
+	void ProcessMove( const SOCKET& socket, char* packet );
+
 
 };
 

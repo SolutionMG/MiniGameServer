@@ -25,6 +25,8 @@ UserManager::UserManager( )
 	{
 		m_pIdPools.push( i );
 	}
+
+	AddProcess();
 }
 
 UserManager::~UserManager( )
@@ -52,59 +54,62 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 		return;
 	}
 
-	switch ( packet[1] )
-	{
-	case ClientToServer::LOGIN_REQUEST:
-	{
-		// 로그인 요청 후 
-		int id = m_users[ socket ]->GetId();
+	m_processFunctions[ packet[ 1 ] ]( socket, packet );
+}
 
-		Packet::LoginRequest data = *reinterpret_cast< Packet::LoginRequest* > ( packet );
-		int baseScore = 0;
-		if ( DataBaseManager::GetInstance( ).LogOn( data.name, data.password, baseScore ) )
-		{
-			Packet::LoginResult send( id, ServerToClient::LOGON_OK);
-			strcpy_s( send.name, data.name );
-			m_users[ socket ]->SendPacket( send  );
-		}
-		else
-		{
-			Packet::LoginResult send( id, ServerToClient::LOGON_FAILED );
-			strcpy_s( send.name, data.name );
-			m_users[ socket ]->SendPacket( send );
-		}
+void UserManager::AddProcess( )
+{
+	m_processFunctions.reserve( 10 );
+	m_processFunctions.emplace( std::make_pair( ClientToServer::LOGIN_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessLoginRequest( socket, packet ); } ) ));
+	m_processFunctions.emplace( std::make_pair( ClientToServer::MOVE, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessLoginRequest( socket, packet ); } ) ) );
+
+}
+
+void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
+{
+	// 로그인 요청 후 
+	int id = m_users[ socket ]->GetId();
+
+	Packet::LoginRequest data = *reinterpret_cast< Packet::LoginRequest* > ( packet );
+	int baseScore = 0;
+	if ( DataBaseManager::GetInstance().LogOn( data.name, data.password, baseScore ) )
+	{
+		Packet::LoginResult send( id, ServerToClient::LOGON_OK );
+		strcpy_s( send.name, data.name );
+		m_users[ socket ]->SendPacket( send );
 	}
-	break;
-	case ClientToServer::MOVE:
+	else
 	{
-		Packet::Move send = *reinterpret_cast< Packet::Move* > ( packet );
-		send.info.type = ServerToClient::MOVE;
-		//검증필요
-
-		//이동
-		int roomNum = m_users[ socket ]->GetRoomNum();
-		{
-			auto& rooms = RoomManager::GetInstance().GetRooms();
-
-			if ( rooms.find( roomNum ) == rooms.end() )
-				return;
-
-			auto& players = rooms[ roomNum ].GetPlayers();
-
-			// 같은 방에 있는 플레이어들에게 정보 전송
-			for ( const auto& index : players )
-			{
-				if ( index == socket )
-					continue;
-
-				m_users[ index ]->SendPacket( send );
-			}
-		}
-		
+		Packet::LoginResult send( id, ServerToClient::LOGON_FAILED );
+		strcpy_s( send.name, data.name );
+		m_users[ socket ]->SendPacket( send );
 	}
-	break;
-	default:
-	break;
+}
+
+void UserManager::ProcessMove( const SOCKET& socket, char* packet )
+{
+	Packet::Move send = *reinterpret_cast< Packet::Move* > ( packet );
+	send.info.type = ServerToClient::MOVE;
+	//검증필요
+
+	//이동
+	int roomNum = m_users[ socket ]->GetRoomNum();
+	{
+		auto& rooms = RoomManager::GetInstance().GetRooms();
+
+		if ( rooms.find( roomNum ) == rooms.end() )
+			return;
+
+		auto& players = rooms[ roomNum ].GetPlayers();
+
+		// 같은 방에 있는 플레이어들에게 정보 전송
+		for ( const auto& index : players )
+		{
+			if ( index == socket )
+				continue;
+
+			m_users[ index ]->SendPacket( send );
+		}
 	}
 }
 

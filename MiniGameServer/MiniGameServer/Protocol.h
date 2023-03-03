@@ -49,7 +49,7 @@ public:
 
 	PacketInfo(
 		const unsigned char	 size,
-		const unsigned short type )
+		const short type )
 		: size( size )
 		, type( type )
 	{

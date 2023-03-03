@@ -130,7 +130,7 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 		auto& users = UserManager::GetInstance( ).GetUsers( );
 		int startReceive = users[ socket ]->GetPreviousReceivePosition( );
 		int byte = bytes;
-		unsigned short packetSize = packet[ 0 ];
+		unsigned char packetSize = packet[ 0 ];
 
 		// 해딩 패킷 사이즈 만큼 왔는지 검사
 		// 패킷의 사이즈만큼 다 왔다면 다음 netbuffer read 위치 초기화
@@ -350,7 +350,7 @@ void NetworkManager::MainWorkProcess( )
 					// 현재 방에 3명 존재 시 게임 시작
 					if ( currentRoom.GetPlayers( ).size( ) == 3 )
 					{
-						std::cout << "방에 3명 입장, 게임 시작 패킷 전송" << std::endl;
+						std::cout << "방에 3명 입장" << std::endl;
 						// 방에 있는 플레이어들에게 각각의 플레이어들 초기 정보 전송 (고유 색, 이름 등)
 						const std::vector<SOCKET> others = currentRoom.GetPlayers();
 						UserManager::GetInstance().PushTask(
@@ -370,10 +370,12 @@ void NetworkManager::MainWorkProcess( )
 									{
 										user[ other ]->SetState( EClientState::GAME );
 										// 게임 시작 요청 클라이언트에게 보내기
-										Packet::GameStart packet( user[ player ]->GetId() );
+										Packet::GameStart packet( user[ other ]->GetId() );
 										packet.color = count;
 										packet.x = InitPlayer::INITPOSITION_X + InitPlayer::INITINTERVAL * count;
-										user[ other ]->SendPacket( packet );
+										user[ player ]->SendPacket( packet );
+										std::cout << player << " : 게임 시작 패킷 전송" << std::endl;
+
 									}
 									++count;
 								}
