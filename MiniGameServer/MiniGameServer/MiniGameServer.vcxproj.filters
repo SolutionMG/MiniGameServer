@@ -49,6 +49,9 @@
     <Filter Include="02.Unit\RoomUnit">
       <UniqueIdentifier>{d879b685-bfaf-4eee-84cd-4992199d2439}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Manager\Math">
+      <UniqueIdentifier>{872ceb31-73cd-435d-9726-465e9910dafb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Singleton.hpp">
@@ -93,6 +96,9 @@
     <ClInclude Include="RoomUnit.h">
       <Filter>02.Unit\RoomUnit</Filter>
     </ClInclude>
+    <ClInclude Include="MathManager.h">
+      <Filter>01.Manager\Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainProcess.cpp">
@@ -130,6 +136,9 @@
     </ClCompile>
     <ClCompile Include="RoomUnit.cpp">
       <Filter>02.Unit\RoomUnit</Filter>
+    </ClCompile>
+    <ClCompile Include="MathManager.cpp">
+      <Filter>01.Manager\Math</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

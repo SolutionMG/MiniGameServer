@@ -7,7 +7,3 @@ PlayerUnit::PlayerUnit( const SOCKET& socket )
 }
 
 PlayerUnit::~PlayerUnit( ) noexcept = default;
-
-void PlayerUnit::SetName( std::string name )
-{
-}

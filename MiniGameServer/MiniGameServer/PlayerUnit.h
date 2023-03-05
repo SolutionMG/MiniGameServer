@@ -10,7 +10,9 @@ struct Position
 {
 	float x;
 	float y;
-	float z;
+public:
+	Position() : x( 0.f ), y( 0.f )	{}
+	Position( float x, float y ) : x( x ), y( y ) {}
 };
 
 class PlayerUnit final : public ClientUnit
@@ -24,10 +26,12 @@ public:
 	explicit PlayerUnit( const SOCKET& socket );
 	virtual ~PlayerUnit( ) noexcept;
 
-	// Set
-	void SetName( std::string name );
-	void SetPosition( const Position& position ) { memcpy_s( &m_position, sizeof( m_position ), &position, sizeof( position ) ); }
+	// Get
+	const Position& GetPosition( ) { return m_position; }
 
+	// Set
+	void SetName( std::string name ) { m_name = name; }
+	void SetPosition( const Position& position ) { memcpy_s( &m_position, sizeof( m_position ), &position, sizeof( position ) ); }
 
 };
 

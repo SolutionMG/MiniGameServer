@@ -5,6 +5,7 @@
 #include "Log.h"
 #include "DataBaseManager.h"
 #include "RoomManager.h"
+#include "MathManager.h"
 
 UserManager::UserManager( )
 	: BaseTaskManager( )
@@ -15,7 +16,7 @@ UserManager::UserManager( )
 		PlayerUnit* player = new PlayerUnit(INVALID_SOCKET);
 		player->SetName( "Default" );
 		player->SetState( EClientState::DISCONNECT );
-		player->SetPosition( Position( 0.f, 0.f, 0.f ) );
+		player->SetPosition( Position( 0.f, 0.f ) );
 		player->SetRoomNumber( -1 );
 		player->SetId( -1 );
 		m_userPools.push( player );
@@ -54,6 +55,12 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 		return;
 	}
 
+	if ( m_users.find( socket ) == m_users.end( ) )
+	{
+		PRINT_LOG( "socket == null, 존재하지 않는 유저로부터의 패킷입니다." );
+		return;
+	}
+
 	m_processFunctions[ packet[ 1 ] ]( socket, packet );
 }
 
@@ -62,7 +69,6 @@ void UserManager::AddProcess( )
 	m_processFunctions.reserve( 10 );
 	m_processFunctions.emplace( std::make_pair( ClientToServer::LOGIN_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessLoginRequest( socket, packet ); } ) ));
 	m_processFunctions.emplace( std::make_pair( ClientToServer::MOVE, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessLoginRequest( socket, packet ); } ) ) );
-
 }
 
 void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
@@ -90,7 +96,19 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 {
 	Packet::Move send = *reinterpret_cast< Packet::Move* > ( packet );
 	send.info.type = ServerToClient::MOVE;
-	//검증필요
+
+	//검증
+	Position previousPos = m_users[ socket ]->GetPosition();
+	Position currentPos = Position( send.x, send.y );
+
+	float distance = MathManager::GetInstance().Distance2D( previousPos.x, previousPos.y, currentPos.x, currentPos.y );
+	float predictDistance = MathManager::GetInstance().Distance2D( previousPos.x, previousPos.y, previousPos.x * InitServer::MAX_SPEED, previousPos.y * InitServer::MAX_SPEED );
+
+	if ( distance > predictDistance )
+	{
+		PRINT_LOG( "이상한 좌표를 수신" );
+		return;
+	}
 
 	//이동
 	int roomNum = m_users[ socket ]->GetRoomNum();
@@ -120,7 +138,7 @@ void UserManager::PushPlayerUnit( PlayerUnit* player )
 
 	player->SetName( "default" );
 	player->SetState( EClientState::DISCONNECT );
-	player->SetPosition( Position( 0.f, 0.f, 0.f ) );
+	player->SetPosition( Position( 0.f, 0.f ) );
 	player->SetRoomNumber( -1 );
 	player->SetId( -1 );
 
@@ -142,7 +160,7 @@ PlayerUnit* UserManager::GetPlayerUnit( )
 		player = new PlayerUnit(INVALID_SOCKET);
 		player->SetName( "default" );
 		player->SetState( EClientState::DISCONNECT );
-		player->SetPosition( Position( 0.f, 0.f, 0.f ) );
+		player->SetPosition( Position( 0.f, 0.f) );
 		player->SetRoomNumber( -1 );
 		player->SetId( -1 );
 	}

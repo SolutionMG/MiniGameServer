@@ -60,7 +60,7 @@ const int& RoomManager::GetNewRoomNumber( )
 	int room = -1;
 	if ( !m_roomPools.try_pop( room ) )
 	{
-		room = m_roomPools.unsafe_size() + 1;
+		room = static_cast< int >( m_roomPools.unsafe_size( ) ) + 1;
 	}
 	return room;
 }

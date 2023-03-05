@@ -136,6 +136,7 @@
     <ClInclude Include="DataBaseManager.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="MathManager.h" />
     <ClInclude Include="OverlappedManager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="NetworkManager.h" />
@@ -152,6 +153,7 @@
     <ClCompile Include="DataBaseManager.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MainProcess.cpp" />
+    <ClCompile Include="MathManager.cpp" />
     <ClCompile Include="OverlappedManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

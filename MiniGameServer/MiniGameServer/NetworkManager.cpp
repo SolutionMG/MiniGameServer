@@ -362,22 +362,21 @@ void NetworkManager::MainWorkProcess( )
 									PRINT_LOG( "user == nullptr" );
 									return;
 								}
-								int count = 0;
-								
+								int count = 1;
 								for ( const auto& player : others )
 								{
+									count = 1;
 									for ( const auto& other : others )
 									{
-										user[ other ]->SetState( EClientState::GAME );
+										user[ player ]->SetState( EClientState::GAME );
 										// 게임 시작 요청 클라이언트에게 보내기
 										Packet::GameStart packet( user[ other ]->GetId() );
 										packet.color = count;
-										packet.x = InitPlayer::INITPOSITION_X + InitPlayer::INITINTERVAL * count;
+										packet.x = InitPlayer::INITPOSITION_X + InitPlayer::INITINTERVAL * ( count - 1 );
 										user[ player ]->SendPacket( packet );
-										std::cout << player << " : 게임 시작 패킷 전송" << std::endl;
-
+										std::cout << player <<"에게 " <<other<<"정보 "<< "게임 시작 패킷 전송" << std::endl;
+										++count;
 									}
-									++count;
 								}
 							} );
 					}
