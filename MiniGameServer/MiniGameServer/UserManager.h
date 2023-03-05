@@ -22,7 +22,7 @@ private:
 	concurrency::concurrent_queue<int>				m_pIdPools;
 
 	//커맨드 접근
-	std::unordered_map<short, std::function<void( const SOCKET& socket, char* packet )>> m_processFunctions;
+	std::unordered_map<unsigned char, std::function<void( const SOCKET& socket, char* packet )>> m_processFunctions;
 public:
 	explicit UserManager( );
 	virtual ~UserManager( );

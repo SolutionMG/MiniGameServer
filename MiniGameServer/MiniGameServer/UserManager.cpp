@@ -61,6 +61,12 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 		return;
 	}
 
+	if ( m_processFunctions.find( packet[ 1 ] ) == m_processFunctions.end() )
+	{
+		PRINT_LOG( "없는 패킷 타입입니다." );
+		return;
+	}
+
 	m_processFunctions[ packet[ 1 ] ]( socket, packet );
 }
 
@@ -68,7 +74,7 @@ void UserManager::AddProcess( )
 {
 	m_processFunctions.reserve( 10 );
 	m_processFunctions.emplace( std::make_pair( ClientToServer::LOGIN_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessLoginRequest( socket, packet ); } ) ));
-	m_processFunctions.emplace( std::make_pair( ClientToServer::MOVE, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessLoginRequest( socket, packet ); } ) ) );
+	m_processFunctions.emplace( std::make_pair( ClientToServer::MOVE, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessMove( socket, packet ); } ) ) );
 }
 
 void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
@@ -102,13 +108,13 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	Position currentPos = Position( send.x, send.y );
 
 	float distance = MathManager::GetInstance().Distance2D( previousPos.x, previousPos.y, currentPos.x, currentPos.y );
-	float predictDistance = MathManager::GetInstance().Distance2D( previousPos.x, previousPos.y, previousPos.x * InitServer::MAX_SPEED, previousPos.y * InitServer::MAX_SPEED );
+	float predictDistance = MathManager::GetInstance().Distance2D( previousPos.x, previousPos.y, previousPos.x * InitServer::MAX_DISTANCE, previousPos.y * InitServer::MAX_DISTANCE );
 
-	if ( distance > predictDistance )
-	{
-		PRINT_LOG( "이상한 좌표를 수신" );
-		return;
-	}
+	//if ( distance > predictDistance )
+	//{
+	//	PRINT_LOG( "이상한 좌표를 수신" );
+	//	return;
+	//}
 
 	//이동
 	int roomNum = m_users[ socket ]->GetRoomNum();

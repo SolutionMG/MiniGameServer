@@ -124,34 +124,46 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 		return;
 	}
 	// 각 유저별 패킷 재조립
+
+	// 해딩 패킷 사이즈 만큼 왔는지 검사
+	// 패킷의 사이즈만큼 다 왔다면 다음 netbuffer read 위치 초기화
+	// 패킷의 사이즈만큼 다 안왔다면, Read 위치 갱신 및 패킷 타입에 따른 처리
+
 	UserManager::GetInstance( ).PushTask(
 		[ socket, packet, bytes ]( )
 	{
 		auto& users = UserManager::GetInstance( ).GetUsers( );
 		int startReceive = users[ socket ]->GetPreviousReceivePosition( );
 		int byte = bytes;
-		unsigned char packetSize = packet[ 0 ];
 
-		// 해딩 패킷 사이즈 만큼 왔는지 검사
-		// 패킷의 사이즈만큼 다 왔다면 다음 netbuffer read 위치 초기화
-		// 패킷의 사이즈만큼 다 안왔다면, Read 위치 갱신 및 패킷 타입에 따른 처리
-
-		if ( packetSize > byte + startReceive )
+		while(byte > 0 )
 		{
-			const int previousPosition = startReceive + byte;
-			users[ socket ]->SetPreviousReceivePosition( previousPosition );
+			unsigned char packetSize = packet[ 0 ];
+
+			if ( packetSize > byte  )
+			{
+				const int previousPosition = startReceive + byte;
+				users[ socket ]->SetPreviousReceivePosition( previousPosition );
+				break;
+			}
+			else
+			{
+				char completePacket[ InitPacket::MAX_PACKETSIZE ];
+				std::copy( packet, packet + packetSize, completePacket );
+
+				// Process Packet
+				UserManager::GetInstance().ProcessPacket( socket, completePacket );
+				byte -= packetSize;
+
+				// Init Receive Buffer
+				char initBuffer[ InitPacket::MAX_BUFFERSIZE ];
+
+				std::copy( packet + packetSize, packet + InitPacket::MAX_BUFFERSIZE, initBuffer );
+				std::copy( initBuffer, initBuffer + InitPacket::MAX_BUFFERSIZE, packet );
+
+				users[ socket ]->SetPreviousReceivePosition( 0 );
+			}
 		}
-		else
-		{
-			char completePacket[ InitPacket::MAX_PACKETSIZE ];
-			memcpy_s( completePacket, sizeof( completePacket ), packet, packetSize );
-			memcpy_s( packet, sizeof( InitPacket::MAX_BUFFERSIZE ), packet + packetSize, ( byte + startReceive - packetSize ) );
-
-			///Process Packet
-			UserManager::GetInstance( ).ProcessPacket( socket, completePacket );
-			users[ socket ]->SetPreviousReceivePosition( static_cast< unsigned char >( byte + startReceive - packetSize ) );
-		}                             
-
 		users[ socket ]->ReceivePacket( );
 	} );
 	

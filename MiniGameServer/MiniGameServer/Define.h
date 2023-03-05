@@ -12,7 +12,7 @@ namespace InitServer
 	constexpr int OVERLAPPED_SIZE = 1000;
 	constexpr int MAX_ROOMSIZE = 100;
 
-	constexpr float MAX_SPEED = 100.f;
+	constexpr float MAX_DISTANCE = 500.f;
 }
 
 //Operation Type
