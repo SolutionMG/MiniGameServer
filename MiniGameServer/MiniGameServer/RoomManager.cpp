@@ -55,7 +55,7 @@ void RoomManager::UpdateRoomTimer()
 			users[ player ]->SendPacket( packet );
 		}
 
-		if ( time == 93 )
+		if ( time == 100 )
 		{
 			room.SetTime( 0 );
 			m_deleteRoomTimers.emplace_back( roomNum );
@@ -82,7 +82,7 @@ void RoomManager::PushTimer( const int& roomNum )
 	m_updateRoomTimers.emplace_back( roomNum );
 }
 
-const int& RoomManager::GetNewRoomNumber( )
+const int RoomManager::GetNewRoomNumber( )
 {
 	int room = -1;
 	if ( !m_roomPools.try_pop( room ) )

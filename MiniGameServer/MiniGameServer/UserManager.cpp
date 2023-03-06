@@ -117,17 +117,17 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	}
 
 	m_users[ socket ]->SetPosition( currentPos );
+	const short color = m_users[ socket ]->GetColor();
 
-	//이동
 	int roomNum = m_users[ socket ]->GetRoomNum();
+	auto& rooms = RoomManager::GetInstance().GetRooms();
+
+	if ( rooms.find( roomNum ) == rooms.end() )
+		return;
+
+	auto& players = rooms[ roomNum ].GetPlayers();
+	// 이동
 	{
-		auto& rooms = RoomManager::GetInstance().GetRooms();
-
-		if ( rooms.find( roomNum ) == rooms.end() )
-			return;
-
-		auto& players = rooms[ roomNum ].GetPlayers();
-
 		// 같은 방에 있는 플레이어들에게 정보 전송
 		for ( const auto& index : players )
 		{
@@ -137,6 +137,47 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			m_users[ index ]->SendPacket( send );
 		}
 	}
+
+	// 충돌
+	{
+		int xIndex = static_cast< int >( currentPos.x / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 X인덱스
+		int yIndex = static_cast< int >( currentPos.y / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 Y인덱스
+		int blockIndex = yIndex + ( xIndex * InitWorld::TILE_COUNTX );
+
+		if ( blockIndex < 0 || blockIndex > 48 )
+			return;
+
+		auto& room = rooms[roomNum];
+		const Tile& tile = room.GetTile( blockIndex );
+
+		if ( tile.color == m_users[ socket ]->GetColor() )
+			return;
+
+		if ( MathManager::GetInstance().CollisionPointAndRectangle( currentPos.x, currentPos.y, tile.x, tile.y) )
+		{
+			// 같은 방에 있는 플레이어들에게 정보 전송
+			for ( const auto& index : players )
+			{
+				Packet::CollisionTile collisionPacket = Packet::CollisionTile( send.owner, blockIndex );
+				m_users[ index ]->SendPacket( collisionPacket );
+			}
+
+			//타일 색 충돌 플레이어 색으로 변경
+			RoomManager::GetInstance().PushTask(
+				[ blockIndex, roomNum, color ]()
+				{
+					auto& rooms = RoomManager::GetInstance().GetRooms();
+
+					if ( rooms.find( roomNum ) == rooms.end() )
+						return;
+
+					rooms[ roomNum ].SetTileColor( blockIndex, color );
+
+				} );
+		}
+	}
+
+
 }
 
 void UserManager::PushPlayerUnit( PlayerUnit* player )

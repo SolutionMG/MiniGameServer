@@ -382,7 +382,7 @@ void NetworkManager::MainWorkProcess( )
 						// 방에 있는 플레이어들에게 각각의 플레이어들 초기 정보 전송 (고유 색, 이름 등)
 						const std::vector<SOCKET> others = currentRoom.GetPlayers();
 						UserManager::GetInstance().PushTask(
-							[ userKey, others ]()
+							[ roomNum, userKey, others ]()
 							{
 								auto& user = UserManager::GetInstance().GetUsers();
 								if ( user.find( userKey ) == user.end() )
@@ -407,17 +407,37 @@ void NetworkManager::MainWorkProcess( )
 										packet.y = pos.y;
 										packet.directionX = InitPlayer::INITDIRECTION_X[ count - 1 ];
 										packet.directionY = InitPlayer::INITDIRECTION_Y[ count - 1 ];
+
 										user[ other ]->SetPosition( pos );
+										user[ other ]->SetColor( count );
 
 										user[ player ]->SendPacket( packet );
+
+										//초기 시작 타일 색 전송
+										Packet::CollisionTile tile( packet.owner, InitWorld::FIRSTTILE_COLOR[ count - 1 ] );
+										user[ player ]->SendPacket( tile );	
+
 										std::cout << player <<"에게 " <<other<<"정보 "<< "게임 시작 패킷 전송" << std::endl;
 										++count;
 									}
 								}
+
+								RoomManager::GetInstance().PushTask(
+									[ roomNum ]()
+									{
+										//타이머 시작
+										RoomManager::GetInstance().PushTimer( roomNum ); 
+
+										//초기 시작 타일 색 변경
+										auto& room = RoomManager::GetInstance().GetRooms()[ roomNum ];
+										for ( int i = 0; i < 3; ++i )
+											room.SetTileColor( InitWorld::FIRSTTILE_COLOR[ i ], i + 1 );
+									} );
+
 							} );
 
 						//게임 타이머 시작
-						RoomManager::GetInstance().PushTimer( roomNum );
+
 					}
 				} );
 

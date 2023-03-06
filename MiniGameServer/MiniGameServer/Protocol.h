@@ -13,17 +13,26 @@ namespace InitPlayer
 	constexpr int MAX_PASSWORD = 32;
 	constexpr float INITPOSITION_X[ 3 ] = {-337.f, -1057.f, -1057.f};
 	constexpr float INITPOSITION_Y[ 3 ] = {182.f, -178.f, 542.f};
-	constexpr float INITDIRECTION_X[ 3 ] = {0.f, 120.f, 240.f};
-	constexpr float INITDIRECTION_Y[ 3 ] = { 0.f,0.f,0.f };
-
+	constexpr float INITDIRECTION_X[ 3 ] = {0.f, -0.5f, -0.5f};
+	constexpr float INITDIRECTION_Y[ 3 ] = { 0.f,-0.866025f,0.866025f };
 }
 
-namespace InitWord
+namespace InitWorld
 {
-	//블록 사이즈
-	constexpr int BLOCK_COUNTX = 7;
-	constexpr int BLOCK_COUNTY = 7;
-	constexpr float BLOCK_SIZE = 32.f;
+	// 블록 정보
+	constexpr int TILE_COUNTX = 7;
+	constexpr int TILE_COUNTY = 7;
+
+	// 반지름
+	constexpr float TILE_SIZE = 159.5f;
+	constexpr float TILEWITHGAP_SIZE = 360.f; /*블록 간 틈을 포함한 거리*/
+
+	//0번 인덱스 블록 위치
+	constexpr float FIRST_TILEPOSITION_X = -697.f;
+	constexpr float FIRST_TILEPOSITION_Y = -898.f;
+
+	//첫 시작 블록 색칠 인덱스
+	constexpr int FIRSTTILE_COLOR[ 3 ] = { 17,23,25 };
 }
 // PACKET TYPE
 
@@ -42,6 +51,7 @@ namespace ServerToClient
 	constexpr unsigned char INITPLAYERS = 3; 
 	constexpr unsigned char MOVE = 4;
 	constexpr unsigned char TIME = 5;
+	constexpr unsigned char COLLISION_BLOCK = 6;
 }
 
 // PACKET DECLARE
@@ -141,6 +151,18 @@ namespace Packet
 		Move( const int owner, const int type/*ClientToServer::Move, ServerToClient::Move*/)
 			: info( sizeof( Move ), type )
 			, owner( owner ), speed(), x(), y(), directionX(), directionY()	{}
+	};
+
+	// 플레이어와 블록과의 충돌 발생 시 클라에게 패킷 전송
+	// 
+	struct CollisionTile
+	{
+		PacketInfo info;
+		int owner;
+		int tileIndex;
+
+		CollisionTile(const int owner, const int tileIndex)
+			:info(sizeof( CollisionTile ), ServerToClient::COLLISION_BLOCK ),owner(owner), tileIndex( tileIndex ) {}
 	};
 
 

@@ -21,6 +21,7 @@ class PlayerUnit final : public ClientUnit
 private:
 	std::string m_name;
 	Position m_position;
+	short m_color;
 
 public:
 	explicit PlayerUnit( const SOCKET& socket );
@@ -28,11 +29,12 @@ public:
 
 	// Get
 	const Position& GetPosition( ) { return m_position; }
+	const short& GetColor() { return m_color; }
 
 	// Set
 	void SetName( std::string name ) { m_name = name; }
 	void SetPosition( const Position& position ) { memcpy_s( &m_position, sizeof( m_position ), &position, sizeof( position ) ); }
-
+	void SetColor( const short& color ) { m_color = color; }
 };
 
 #endif // !PLAYERUNIT_H

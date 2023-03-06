@@ -48,7 +48,7 @@ public:
 	virtual const std::string GetName() const noexcept final  { return  "RoomManager"; }	
 	// 规 包府 按眉 馆券
 	std::unordered_map< int, RoomUnit >& GetRooms() { return m_rooms; }
-	const int& GetNewRoomNumber();
+	const int GetNewRoomNumber();
 };
 
 #endif
