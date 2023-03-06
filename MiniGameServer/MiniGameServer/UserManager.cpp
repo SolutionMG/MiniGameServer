@@ -110,11 +110,13 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	float distance = MathManager::GetInstance().Distance2D( previousPos.x, previousPos.y, currentPos.x, currentPos.y );
 	float predictDistance = MathManager::GetInstance().Distance2D( previousPos.x, previousPos.y, previousPos.x * InitServer::MAX_DISTANCE, previousPos.y * InitServer::MAX_DISTANCE );
 
-	//if ( distance > predictDistance )
-	//{
-	//	PRINT_LOG( "이상한 좌표를 수신" );
-	//	return;
-	//}
+	if ( distance > predictDistance )
+	{
+		PRINT_LOG( "이상한 좌표를 수신" );
+		//return;
+	}
+
+	m_users[ socket ]->SetPosition( currentPos );
 
 	//이동
 	int roomNum = m_users[ socket ]->GetRoomNum();

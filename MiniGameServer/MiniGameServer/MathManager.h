@@ -12,7 +12,7 @@ public:
 	virtual ~MathManager() = default;
 
 	//Math Function
-	float Distance2D( const float& x1, const float& y1, const float& x2, const float& y2 );
+	float Distance2D( const float& x1, const float& y1, const float& x2, const float& y2 );	
 };
 
 #endif // !MATHMANAGER_H

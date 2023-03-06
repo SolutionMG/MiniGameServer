@@ -175,20 +175,36 @@ void NetworkManager::Disconnect( const SOCKET& socket )
 	RoomManager::GetInstance().PushTask(
 		[ socket ]()
 		{
-			auto& users = UserManager::GetInstance().GetUsers();
-			
+			auto& users = UserManager::GetInstance().GetUsers();		
+
 			if ( users.find( socket ) == users.end() )
+			{
+				PRINT_LOG( "존재하지 않는 유저입니다." );
 				return;
+			}
 			if ( !users[ socket ] )
+			{
+				PRINT_LOG( "*Player == nullptr 입니다." );
 				return;
+			}
 
 			int id = users[ socket ]->GetId();
 			int roomNum = users[ socket ]->GetRoomNum();
 
-			RoomManager::GetInstance().GetRooms()[ roomNum ].PopPlayer( socket );
-			if ( RoomManager::GetInstance().GetRooms()[ roomNum ].GetPlayers().empty() )
+			auto& rooms = RoomManager::GetInstance().GetRooms();
+
+			if ( rooms.find( roomNum ) == rooms.end() )
 			{
-				RoomManager::GetInstance().GetRooms().erase( roomNum );
+				PRINT_LOG( "존재 하지 않는 방입니다." );
+				return;
+			}
+
+			auto& room = RoomManager::GetInstance().GetRooms()[ roomNum ];
+
+			room.PopPlayer( socket );
+			if ( room.GetPlayers().empty() )
+			{
+				rooms.erase( roomNum );
 				RoomManager::GetInstance().PushRoomNumber( roomNum );
 				std::cout << "방 삭제" << std::endl;
 			}
@@ -381,16 +397,27 @@ void NetworkManager::MainWorkProcess( )
 									for ( const auto& other : others )
 									{
 										user[ player ]->SetState( EClientState::GAME );
-										// 게임 시작 요청 클라이언트에게 보내기
-										Packet::GameStart packet( user[ other ]->GetId() );
+										// 인게임 플레이어 초기화 정보 클라이언트에게 보내기
+										Packet::InitPlayers packet( user[ other ]->GetId() );
 										packet.color = count;
-										packet.x = InitPlayer::INITPOSITION_X + InitPlayer::INITINTERVAL * ( count - 1 );
+
+										Position pos = Position( InitPlayer::INITPOSITION_X[ count - 1 ], InitPlayer::INITPOSITION_Y[ count - 1 ] );
+										//위치 수정하기
+										packet.x = pos.x;
+										packet.y = pos.y;
+										packet.directionX = InitPlayer::INITDIRECTION_X[ count - 1 ];
+										packet.directionY = InitPlayer::INITDIRECTION_Y[ count - 1 ];
+										user[ other ]->SetPosition( pos );
+
 										user[ player ]->SendPacket( packet );
 										std::cout << player <<"에게 " <<other<<"정보 "<< "게임 시작 패킷 전송" << std::endl;
 										++count;
 									}
 								}
 							} );
+
+						//게임 타이머 시작
+						RoomManager::GetInstance().PushTimer( roomNum );
 					}
 				} );
 

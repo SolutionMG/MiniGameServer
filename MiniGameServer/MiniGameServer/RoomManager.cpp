@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "RoomManager.h"
 #include "RoomUnit.h"
+#include "UserManager.h"
+#include "PlayerUnit.h"
 
 RoomManager::RoomManager( )
 	:m_updateRoomTimers(), m_timerThread()
@@ -32,17 +34,42 @@ void RoomManager::RunTimer()
 
 void RoomManager::UpdateRoomTimer()
 {
-	int roomNum = -1;
-	while ( m_updateRoomTimers.try_pop( roomNum ) )
+	// 각 플레이어에 시간 send
+	for(auto& roomNum : m_updateRoomTimers )
 	{
 		if ( m_rooms.find( roomNum ) == m_rooms.end() )
 			continue;
 
 		auto& room = m_rooms[ roomNum ];
-		room.SetTime( room.GetTime() + 1 );
+		unsigned char time = room.GetTime();
+		room.SetTime( ++time );
 
 		//각 방의 플레이어들에게 타이머 Send
+		auto& users = UserManager::GetInstance().GetUsers();
+		for ( auto& player : m_rooms[ roomNum ].GetPlayers() )
+		{
+			if ( users.find( player ) == users.end() )
+				continue;
+
+			Packet::Timer packet( time );
+			users[ player ]->SendPacket( packet );
+		}
+
+		if ( time == 93 )
+		{
+			room.SetTime( 0 );
+			m_deleteRoomTimers.emplace_back( roomNum );
+		}
 	}
+
+	// 93초가 넘었을 때 타이머에서 제거 (게임 종료)
+	for ( auto& roomNum : m_deleteRoomTimers )
+	{
+		std::erase_if( m_updateRoomTimers,
+			[ roomNum ]( const int& index )
+			{ return index == roomNum; });
+	}
+	m_deleteRoomTimers.clear();
 }
 
 void RoomManager::PushRoomNumber( const int& number )
@@ -52,7 +79,7 @@ void RoomManager::PushRoomNumber( const int& number )
 
 void RoomManager::PushTimer( const int& roomNum )
 {
-	m_updateRoomTimers.push( roomNum );
+	m_updateRoomTimers.emplace_back( roomNum );
 }
 
 const int& RoomManager::GetNewRoomNumber( )

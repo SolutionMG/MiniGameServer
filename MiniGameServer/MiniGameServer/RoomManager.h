@@ -19,7 +19,11 @@ private:
 	//방 번호 풀링
 	concurrency::concurrent_queue<int>	m_roomPools;
 
-	concurrency::concurrent_queue<int> m_updateRoomTimers;
+	// 인게임 타이머를 보낼 방들
+	std::vector<int/*방 번호*/> m_updateRoomTimers;
+	// 인게임에서 삭제할 타이머
+	std::vector<int/*방 번호*/> m_deleteRoomTimers;
+
 	std::jthread m_timerThread;
 
 public:
