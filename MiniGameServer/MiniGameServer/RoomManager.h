@@ -47,8 +47,12 @@ public:
 	// 쓰레드 이름 반환
 	virtual const std::string GetName() const noexcept final  { return  "RoomManager"; }	
 	// 방 관리 객체 반환
-	std::unordered_map< int, RoomUnit >& GetRooms() { return m_rooms; }
+	RoomUnit& GetRoom( const int& index );
+	std::unordered_map<int, RoomUnit>& GetRooms() { return m_rooms; }
 	const int GetNewRoomNumber();
+
+	//방 삭제
+	void DeleteRoom( const int& index );
 };
 
 #endif

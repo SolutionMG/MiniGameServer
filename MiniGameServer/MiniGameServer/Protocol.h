@@ -11,8 +11,8 @@ namespace InitPlayer
 {
 	constexpr int MAX_NAME = 16;
 	constexpr int MAX_PASSWORD = 32;
-	constexpr float INITPOSITION_X[ 3 ] = {-337.f, -1057.f, -1057.f};
-	constexpr float INITPOSITION_Y[ 3 ] = {182.f, -178.f, 542.f};
+	constexpr float INITPOSITION_X[ 3 ] = {1726.f, 1366.f , 2086.f};
+	constexpr float INITPOSITION_Y[ 3 ] = {1486.f, 2206.f, 2206.f};
 	constexpr float INITDIRECTION_X[ 3 ] = {0.f, -0.5f, -0.5f};
 	constexpr float INITDIRECTION_Y[ 3 ] = { 0.f,-0.866025f,0.866025f };
 }
@@ -24,12 +24,12 @@ namespace InitWorld
 	constexpr int TILE_COUNTY = 7;
 
 	// 반지름
-	constexpr float TILE_SIZE = 159.5f;
+	constexpr float TILECOLLIDER_SIZE = 159.5f;
 	constexpr float TILEWITHGAP_SIZE = 360.f; /*블록 간 틈을 포함한 거리*/
 
 	//0번 인덱스 블록 위치
-	constexpr float FIRST_TILEPOSITION_X = -697.f;
-	constexpr float FIRST_TILEPOSITION_Y = -898.f;
+	constexpr float FIRST_TILEPOSITION_X = 646.f;
+	constexpr float FIRST_TILEPOSITION_Y = 766.f;
 
 	//첫 시작 블록 색칠 인덱스
 	constexpr int FIRSTTILE_COLOR[ 3 ] = { 17,23,25 };

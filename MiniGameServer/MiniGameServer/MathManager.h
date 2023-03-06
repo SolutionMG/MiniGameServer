@@ -13,7 +13,7 @@ public:
 
 	//Math Function
 	float Distance2D( const float& x1, const float& y1, const float& x2, const float& y2 );	
-	bool CollisionPointAndRectangle( const float& pointX, const float& pointY, const float& rectangleX, const float& rectangleY, const float& rectangleSize = InitWorld::TILE_SIZE );
+	bool CollisionPointAndRectangle( const float& pointX, const float& pointY, const float& rectangleX, const float& rectangleY, const float& rectangleSize = InitWorld::TILECOLLIDER_SIZE );
 };
 
 #endif // !MATHMANAGER_H

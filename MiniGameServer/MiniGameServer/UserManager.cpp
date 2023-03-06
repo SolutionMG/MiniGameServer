@@ -120,12 +120,12 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	const short color = m_users[ socket ]->GetColor();
 
 	int roomNum = m_users[ socket ]->GetRoomNum();
-	auto& rooms = RoomManager::GetInstance().GetRooms();
+	auto& room = RoomManager::GetInstance().GetRoom( roomNum );
 
-	if ( rooms.find( roomNum ) == rooms.end() )
+	if ( room.GetTile(0).color == -1 )
 		return;
 
-	auto& players = rooms[ roomNum ].GetPlayers();
+	auto& players = room.GetPlayers();
 	// 이동
 	{
 		// 같은 방에 있는 플레이어들에게 정보 전송
@@ -140,14 +140,13 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 
 	// 충돌
 	{
-		int xIndex = static_cast< int >( currentPos.x / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 X인덱스
-		int yIndex = static_cast< int >( currentPos.y / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 Y인덱스
-		int blockIndex = yIndex + ( xIndex * InitWorld::TILE_COUNTX );
+		int xIndex = static_cast< int >( ( currentPos.x - ( InitWorld::FIRST_TILEPOSITION_X - InitWorld::TILEWITHGAP_SIZE / 2.f ) ) / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 X인덱스
+		int yIndex = static_cast< int >( ( currentPos.y - ( InitWorld::FIRST_TILEPOSITION_Y - InitWorld::TILEWITHGAP_SIZE / 2.f ) ) / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 Y인덱스
+		int blockIndex = xIndex + ( yIndex * InitWorld::TILE_COUNTX );
 
 		if ( blockIndex < 0 || blockIndex > 48 )
 			return;
 
-		auto& room = rooms[roomNum];
 		const Tile& tile = room.GetTile( blockIndex );
 
 		if ( tile.color == m_users[ socket ]->GetColor() )
@@ -155,6 +154,8 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 
 		if ( MathManager::GetInstance().CollisionPointAndRectangle( currentPos.x, currentPos.y, tile.x, tile.y) )
 		{
+			std::cout << "충돌 정보 전송" << blockIndex << std::endl;
+
 			// 같은 방에 있는 플레이어들에게 정보 전송
 			for ( const auto& index : players )
 			{
@@ -166,18 +167,22 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			RoomManager::GetInstance().PushTask(
 				[ blockIndex, roomNum, color ]()
 				{
-					auto& rooms = RoomManager::GetInstance().GetRooms();
-
-					if ( rooms.find( roomNum ) == rooms.end() )
+					auto& room = RoomManager::GetInstance().GetRoom( roomNum );
+					if(room.GetTile(0).color == -1)
 						return;
 
-					rooms[ roomNum ].SetTileColor( blockIndex, color );
+					room.SetTileColor( blockIndex, color );
 
 				} );
 		}
 	}
 
 
+}
+
+void UserManager::DeleteUser( const SOCKET& socket )
+{
+	m_users.erase( socket );
 }
 
 void UserManager::PushPlayerUnit( PlayerUnit* player )
@@ -199,6 +204,14 @@ void UserManager::PushPlayerId( const int& id )
 	if ( id < 0 )
 		return;
 	m_pIdPools.push( id );
+}
+
+PlayerUnit* UserManager::GetUser( const SOCKET& socket )
+{
+	if ( m_users.find( socket ) == m_users.end() )
+		return nullptr;
+
+	return  m_users[ socket ]; 
 }
 
 PlayerUnit* UserManager::GetPlayerUnit( )

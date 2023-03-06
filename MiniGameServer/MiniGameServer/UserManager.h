@@ -38,7 +38,9 @@ public:
 	// Get
 	virtual const int GetAwakeInterval( ) const noexcept final	{ return InitServer::UPDATE_AWAKE_MS; };
 	virtual const std::string GetName( ) const noexcept final	{ return  "UserManager"; }
-	std::unordered_map<SOCKET, PlayerUnit*>& GetUsers( )		{ return m_users; }
+	
+	PlayerUnit* GetUser( const SOCKET& socket );
+	std::unordered_map<SOCKET, PlayerUnit*>& GetUsers(){ return m_users; }
 
 	//접속 유저 객체, 유저풀에서 객체 꺼내 전달
 	PlayerUnit* GetPlayerUnit( );
@@ -54,6 +56,7 @@ public:
 	void ProcessLoginRequest( const SOCKET& socket, char* packet );
 	void ProcessMove( const SOCKET& socket, char* packet );
 
+	void DeleteUser( const SOCKET& socket );
 
 };
 

@@ -132,8 +132,10 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 	UserManager::GetInstance( ).PushTask(
 		[ socket, packet, bytes ]( )
 	{
-		auto& users = UserManager::GetInstance( ).GetUsers( );
-		int startReceive = users[ socket ]->GetPreviousReceivePosition( );
+		PlayerUnit* user = UserManager::GetInstance( ).GetUser( socket );
+		if ( !user )
+			return;
+		int startReceive = user->GetPreviousReceivePosition( );
 		int byte = bytes;
 
 		while(byte > 0 )
@@ -143,7 +145,7 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 			if ( packetSize > byte  )
 			{
 				const int previousPosition = startReceive + byte;
-				users[ socket ]->SetPreviousReceivePosition( previousPosition );
+				user->SetPreviousReceivePosition( previousPosition );
 				break;
 			}
 			else
@@ -161,10 +163,10 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 				std::copy( packet + packetSize, packet + InitPacket::MAX_BUFFERSIZE, initBuffer );
 				std::copy( initBuffer, initBuffer + InitPacket::MAX_BUFFERSIZE, packet );
 
-				users[ socket ]->SetPreviousReceivePosition( 0 );
+				user->SetPreviousReceivePosition( 0 );
 			}
 		}
-		users[ socket ]->ReceivePacket( );
+		user->ReceivePacket( );
 	} );
 	
 }
@@ -175,36 +177,29 @@ void NetworkManager::Disconnect( const SOCKET& socket )
 	RoomManager::GetInstance().PushTask(
 		[ socket ]()
 		{
-			auto& users = UserManager::GetInstance().GetUsers();		
+			PlayerUnit* user = UserManager::GetInstance().GetUser(socket);		
 
-			if ( users.find( socket ) == users.end() )
+			if ( !user )
 			{
 				PRINT_LOG( "존재하지 않는 유저입니다." );
 				return;
 			}
-			if ( !users[ socket ] )
-			{
-				PRINT_LOG( "*Player == nullptr 입니다." );
-				return;
-			}
 
-			int id = users[ socket ]->GetId();
-			int roomNum = users[ socket ]->GetRoomNum();
+			int id = user->GetId();
+			int roomNum = user->GetRoomNum();
 
-			auto& rooms = RoomManager::GetInstance().GetRooms();
+			auto& room = RoomManager::GetInstance().GetRoom(roomNum);
 
-			if ( rooms.find( roomNum ) == rooms.end() )
+			if ( room.GetTile(0).color == -1 )
 			{
 				PRINT_LOG( "존재 하지 않는 방입니다." );
 				return;
 			}
 
-			auto& room = RoomManager::GetInstance().GetRooms()[ roomNum ];
-
 			room.PopPlayer( socket );
 			if ( room.GetPlayers().empty() )
 			{
-				rooms.erase( roomNum );
+				RoomManager::GetInstance().DeleteRoom( roomNum );
 				RoomManager::GetInstance().PushRoomNumber( roomNum );
 				std::cout << "방 삭제" << std::endl;
 			}
@@ -219,12 +214,17 @@ void NetworkManager::Disconnect( const SOCKET& socket )
 					// 같은 방 사람들에게 플레이어 종료 정보 전송 
 
 					//유저객체 유저풀에 전달
-					auto& users = UserManager::GetInstance().GetUsers();
-					std::cout << users[ socket ]->GetId() << " 유저 접속 종료" << std::endl;
+					PlayerUnit* user = UserManager::GetInstance().GetUser(socket);
+					if ( !user )
+					{
+						PRINT_LOG( "user == nullptr" );
+						return;
+					}
+					std::cout << user->GetId() << " 유저 접속 종료" << std::endl;
 
-					UserManager::GetInstance().PushPlayerUnit( users[ socket ] );
-					UserManager::GetInstance().PushPlayerId( users[ socket ]->GetId() );
-					users.erase( socket );
+					UserManager::GetInstance().PushPlayerUnit( user );
+					UserManager::GetInstance().PushPlayerId( user->GetId() );
+					UserManager::GetInstance().DeleteUser( socket );
 				} );
 		} );
 }
@@ -318,7 +318,7 @@ void NetworkManager::MainWorkProcess( )
 			UserManager::GetInstance( ).PushTask(
 				[ userKey ]( )
 				{
-					auto& users = UserManager::GetInstance( ).GetUsers( );
+					auto& users = UserManager::GetInstance( ).GetUsers();
 					const int userCount = static_cast< int >( users.size( ) );
 					if ( userCount <= InitServer::MAX_PLAYERNUM )
 					{
@@ -371,8 +371,8 @@ void NetworkManager::MainWorkProcess( )
 					UserManager::GetInstance( ).PushTask(
 						[ userKey, roomNum ]( )
 						{
-							UserManager::GetInstance( ).GetUsers( )[ userKey ]->SetState( EClientState::MATCHING );
-							UserManager::GetInstance( ).GetUsers( )[ userKey ]->SetRoomNumber( roomNum );
+							UserManager::GetInstance( ).GetUser( userKey )->SetState( EClientState::MATCHING );
+							UserManager::GetInstance( ).GetUser( userKey )->SetRoomNumber( roomNum );
 						} );
 
 					// 현재 방에 3명 존재 시 게임 시작
