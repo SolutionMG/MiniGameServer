@@ -3,6 +3,7 @@
 #include "RoomUnit.h"
 #include "UserManager.h"
 #include "PlayerUnit.h"
+#include "MathManager.h"
 
 RoomManager::RoomManager()
 	:m_updateRoomTimers(), m_timerThread()
@@ -53,6 +54,17 @@ void RoomManager::UpdateRoomTimer()
 
 			Packet::Timer packet( time );
 			user->SendPacket( packet );
+		}
+
+		if ( time > 0 && ( time % InitWorld::ITEMSPAWNTIME == 0 ) )
+		{
+			//해당 방에 아이템 추가 및 클라이언트에게 아이템 위치 및 타입 전송
+
+			//int randomIndex = MathManager::GetInstance().randomInteger( 0, 48 );
+			//int itemType = MathManager::GetInstance().randomInteger( 0, 3 );
+			//const Tile tile = room.GetTile( randomIndex );
+			//Packet::ItemSpawn item( tile.x, tile.y, static_cast< unsigned char >( itemType ) );
+			//itemspawn 플레이어들에게 send, room객체에도 아이템 정보 push
 		}
 
 		if ( time == 100 )

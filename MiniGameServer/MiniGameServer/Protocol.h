@@ -1,59 +1,7 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
-namespace InitPacket
-{
-	constexpr unsigned short MAX_BUFFERSIZE = 1024;
-	constexpr unsigned short MAX_PACKETSIZE = 255;
-}
-
-namespace InitPlayer
-{
-	constexpr int MAX_NAME = 16;
-	constexpr int MAX_PASSWORD = 32;
-	constexpr float INITPOSITION_X[ 3 ] = {1726.f, 1366.f , 2086.f};
-	constexpr float INITPOSITION_Y[ 3 ] = {1486.f, 2206.f, 2206.f};
-	constexpr float INITDIRECTION_X[ 3 ] = {0.f, -0.5f, -0.5f};
-	constexpr float INITDIRECTION_Y[ 3 ] = { 0.f,-0.866025f,0.866025f };
-}
-
-namespace InitWorld
-{
-	// 블록 정보
-	constexpr int TILE_COUNTX = 7;
-	constexpr int TILE_COUNTY = 7;
-
-	// 반지름
-	constexpr float TILECOLLIDER_SIZE = 159.5f;
-	constexpr float TILEWITHGAP_SIZE = 360.f; /*블록 간 틈을 포함한 거리*/
-
-	//0번 인덱스 블록 위치
-	constexpr float FIRST_TILEPOSITION_X = 646.f;
-	constexpr float FIRST_TILEPOSITION_Y = 766.f;
-
-	//첫 시작 블록 색칠 인덱스
-	constexpr int FIRSTTILE_COLOR[ 3 ] = { 17,30,32 };
-}
-// PACKET TYPE
-
-// CLIENT
-namespace ClientToServer
-{
-	constexpr unsigned char LOGIN_REQUEST = 0;
-	constexpr unsigned char MOVE = 1;
-}
-// SERVER
-namespace ServerToClient
-{
-	constexpr unsigned char FIRSTINFO = 0;
-	constexpr unsigned char LOGON_OK = 1;
-	constexpr unsigned char LOGON_FAILED = 2;
-	constexpr unsigned char INITPLAYERS = 3; 
-	constexpr unsigned char MOVE = 4;
-	constexpr unsigned char TIME = 5;
-	constexpr unsigned char COLLISION_BLOCK = 6;
-	constexpr unsigned char PLAYERSCORE = 7;
-}
+#include "InitDefine.h"
 
 // PACKET DECLARE
 #pragma pack(push, 1)
@@ -155,7 +103,6 @@ namespace Packet
 	};
 
 	// 플레이어와 블록과의 충돌 발생 시 클라에게 패킷 전송
-	// 
 	struct CollisionTile
 	{
 		PacketInfo info;
@@ -166,6 +113,17 @@ namespace Packet
 			:info(sizeof( CollisionTile ), ServerToClient::COLLISION_BLOCK ),owner(owner), tileIndex( tileIndex ) {}
 	};
 
+	// 플레이어와 플레이어의 충돌 패킷
+	// 충돌이 발생한 플레이어 배열을 클라이언트에게 전송
+	// 클라이언트는 owners가 -1이 아닌 플레이어들을 lookVector의 반대 방향으로 일정 힘만큼 밀기
+	struct CollisionPlayer
+	{
+		PacketInfo info;
+		int owners[3];
+
+		CollisionPlayer()
+			:info( sizeof( CollisionPlayer ), ServerToClient::COLLISION_PLAYER ), owners{-1,-1,-1}  {	}
+	};
 
 	// 서버가 클라이언트에게 보내는 인게임 타이머
 	// 단위: 1초
@@ -184,6 +142,17 @@ namespace Packet
 		int owner;
 		unsigned char score;
 		Score(const int owner, unsigned char score ) :info(sizeof( Score ), ServerToClient::PLAYERSCORE ), owner(owner), score(score){}
+	};
+
+	//아이템 스폰 패킷
+	// 해당 좌표에 해당 타입의 아이템 클라이언트에 생성
+	struct ItemSpawn
+	{
+		PacketInfo info;
+		unsigned char itemtype;
+		float x; 
+		float y;
+		ItemSpawn(float x, float y, unsigned char itemtype) :info( sizeof( ItemSpawn ), ServerToClient::ITEMSPAWN ),x(x), y(y), itemtype(itemtype) {}
 	};
 }
 #pragma pack(pop)

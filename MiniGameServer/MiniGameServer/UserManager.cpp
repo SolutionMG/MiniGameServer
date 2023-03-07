@@ -113,7 +113,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	if ( distance > predictDistance )
 	{
 		PRINT_LOG( "이상한 좌표를 수신" );
-		//return;
+		return;
 	}
 
 	PlayerUnit* player = m_users[ socket ];
@@ -137,6 +137,45 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 				continue;
 
 			m_users[ index ]->SendPacket( send );
+		}
+	}
+
+	// 플레이어 간 충돌
+	{
+		Packet::CollisionPlayer cp;
+		cp.owners[ 0 ] = player->GetId();
+		int count = 1;
+		bool collision = false;
+		for ( const auto& index : players )
+		{
+			if ( index == socket )
+				continue;
+
+			//충돌 검사
+			const Position temp = m_users[ index ]->GetPosition();
+			//std::cout << player->GetColor() << "색상 플레이어와 " << m_users[ index ]->GetColor() << "색상 플레이어 충돌 검사" << std::endl;
+			if ( MathManager::GetInstance().CollisionSphere( currentPos.x, currentPos.y, temp.x, temp.y ) )
+			{
+				collision = true;
+
+				if ( count < 1 || count > 2 )
+					continue;
+
+				cp.owners[ count++ ] = m_users[ index ]->GetId();
+
+				// 1 빨강 2 파랑 3 노랑
+				// std::cout << "!!!!!!!!" << player->GetColor() << "색상 플레이어와 " << m_users[ index ]->GetColor() << "색상 플레이어 충돌 발생!!!!!!!!" << std::endl;
+
+			}
+		}
+
+		// 플레이어 간 충돌 사실 전달
+		if ( collision )
+		{
+			for ( const auto& index : players )
+			{
+				m_users[ index ]->SendPacket( cp );
+			}
 		}
 	}
 
@@ -221,8 +260,6 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 				} );
 		}
 	}
-
-
 }
 
 void UserManager::DeleteUser( const SOCKET& socket )

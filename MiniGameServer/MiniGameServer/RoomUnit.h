@@ -14,6 +14,17 @@ public:
 	Tile(float x, float y) :index(-1),x(x),y(y),color(0) {}
 };
 
+// 인게임 상의 item들
+struct Item
+{
+	float x;
+	float y;
+	unsigned char itemType;
+public:
+	Item() : x(), y(), itemType() {}
+	Item( float x, float y, unsigned char itemType ) : x( x ), y( y ), itemType( itemType ) {}
+};
+
 class RoomUnit final
 {
 private:

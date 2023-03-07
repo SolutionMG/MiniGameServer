@@ -135,6 +135,7 @@
     <ClInclude Include="ClientUnit.h" />
     <ClInclude Include="DataBaseManager.h" />
     <ClInclude Include="Define.h" />
+    <ClInclude Include="InitDefine.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MathManager.h" />
     <ClInclude Include="OverlappedManager.h" />

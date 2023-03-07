@@ -99,6 +99,9 @@
     <ClInclude Include="MathManager.h">
       <Filter>01.Manager\Math</Filter>
     </ClInclude>
+    <ClInclude Include="InitDefine.h">
+      <Filter>99.Base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainProcess.cpp">

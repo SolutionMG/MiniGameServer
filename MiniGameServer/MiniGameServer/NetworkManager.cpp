@@ -418,8 +418,6 @@ void NetworkManager::MainWorkProcess( )
 										user[ player ]->SendPacket( tile );	
 
 										std::cout << player << "에게 " << other << "정보 " << "게임 시작 패킷 전송" << std::endl;
-										std::cout << InitWorld::FIRSTTILE_COLOR[ count - 1 ] << "초기 발판 색상 정보 주기" << std::endl;
-
 										++count;
 									}
 								}
