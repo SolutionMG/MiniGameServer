@@ -315,10 +315,10 @@ void NetworkManager::MainWorkProcess( )
 			std::cout << "ACCEPT Player [" << userKey << "]" << std::endl;
 
 			// Player »ý¼º
-			UserManager::GetInstance( ).PushTask(
-				[ userKey ]( )
+			UserManager::GetInstance().PushTask(
+				[ userKey ]()
 				{
-					auto& users = UserManager::GetInstance( ).GetUsers();
+					auto& users = UserManager::GetInstance().GetUsers();
 					const int userCount = static_cast< int >( users.size( ) );
 					if ( userCount <= InitServer::MAX_PLAYERNUM )
 					{

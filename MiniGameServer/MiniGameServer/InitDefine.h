@@ -13,8 +13,8 @@ namespace InitPlayer
 	constexpr int MAX_PASSWORD = 32;
 	constexpr float INITPOSITION_X[ 3 ] = { 1726.f, 1366.f , 2086.f };
 	constexpr float INITPOSITION_Y[ 3 ] = { 1486.f, 2206.f, 2206.f };
-	constexpr float INITDIRECTION_X[ 3 ] = { 0.f, -0.5f, -0.5f };
-	constexpr float INITDIRECTION_Y[ 3 ] = { 0.f,0.866025f,-0.866025f };
+	constexpr float INITDIRECTION_X[ 3 ] = { 0.f, -0.866f, 0.866f };
+	constexpr float INITDIRECTION_Y[ 3 ] = { -1.f, 0.5f, 0.5f };
 }
 
 namespace InitWorld
