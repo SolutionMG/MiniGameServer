@@ -122,12 +122,14 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	const short color = player->GetColor();
 
 	int roomNum = player->GetRoomNum();
-	auto& room = RoomManager::GetInstance().GetRoom( roomNum );
+	RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
 
-	if ( room.GetTile(0).color == -1 )
+	if ( !room )
+	{
+		PRINT_LOG( "존재하지 않는 방입니다." );
 		return;
-
-	auto& players = room.GetPlayers();
+	}
+	auto& players = room->GetPlayers();
 	// 이동
 	{
 		// 같은 방에 있는 플레이어들에게 정보 전송
@@ -137,6 +139,20 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 				continue;
 
 			m_users[ index ]->SendPacket( send );
+		}
+	}
+
+	// 벽 충돌
+	{
+		unsigned char returnValue = MathManager::GetInstance().CheckCollisionWall( currentPos.x, currentPos.y );
+		if ( returnValue != InitWorld::NOTWALLCOLLISION)
+		{
+			Packet::CollisionWall wall( player->GetId(), returnValue );
+			
+			for ( const auto& index : players )
+			{
+				m_users[ index ]->SendPacket( wall );
+			}
 		}
 	}
 
@@ -179,6 +195,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		}
 	}
 
+
 	// 발판 충돌
 	{
 		int xIndex = static_cast< int >( ( currentPos.x - ( InitWorld::FIRST_TILEPOSITION_X - InitWorld::TILEWITHGAP_SIZE / 2.f ) ) / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 X인덱스
@@ -190,7 +207,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			PRINT_LOG( "맵 외부의 좌표 수신" );
 			return;
 		}
-		const Tile& tile = room.GetTile( blockIndex );
+		const Tile& tile = room->GetTile( blockIndex );
 
 		if ( tile.color == player->GetColor() )
 			return;
@@ -251,11 +268,13 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			RoomManager::GetInstance().PushTask(
 				[ blockIndex, roomNum, color ]()
 				{
-					auto& room = RoomManager::GetInstance().GetRoom( roomNum );
-					if(room.GetTile(0).color == -1)
+					RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
+					if ( !room )
+					{
+						PRINT_LOG( "존재하지 않는 방입니다." );
 						return;
-
-					room.SetTileColor( blockIndex, color );
+					}
+					room->SetTileColor( blockIndex, color );
 
 				} );
 		}

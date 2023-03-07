@@ -34,3 +34,20 @@ int MathManager::randomInteger( const int& min, const int& max )
 	 
 	return dis(gen);
 }
+
+unsigned char MathManager::CheckCollisionWall( const float& x, const float& y, const float& left, const float& right, const float& forward, const float& backward )
+{
+	if ( x <= left )
+		return  InitWorld::LEFT_WALL ;
+
+	if ( x >= right )
+		return  InitWorld::RIGHT_WALL ;
+
+	if ( y <= forward )
+		return InitWorld::FORWARD_WALL ;
+
+	if ( y >= backward )
+		return InitWorld::BACKWARD_WALL;
+
+	return InitWorld::NOTWALLCOLLISION;
+}

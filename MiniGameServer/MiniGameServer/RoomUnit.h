@@ -41,6 +41,8 @@ public:
 
 public:
 	
+	void InitializeRoom();
+
 	//set
 	void SetTime( const unsigned char& time ){ m_time = time; }
 	void PushPlayer( const SOCKET& socket ) { m_players.emplace_back( socket ); }

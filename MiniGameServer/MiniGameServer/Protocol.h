@@ -125,6 +125,17 @@ namespace Packet
 			:info( sizeof( CollisionPlayer ), ServerToClient::COLLISION_PLAYER ), owners{-1,-1,-1}  {	}
 	};
 
+	// 플레이어와 벽과 충돌
+	struct CollisionWall
+	{
+		PacketInfo info;
+		int owner;
+		unsigned char wallNum;
+
+		CollisionWall(const int owner, const unsigned char wallNum)
+			: info(sizeof( CollisionWall ), ServerToClient::COLLISION_WALL ),owner(owner), wallNum(wallNum) {}
+	};
+
 	// 서버가 클라이언트에게 보내는 인게임 타이머
 	// 단위: 1초
 	struct Timer

@@ -38,6 +38,17 @@ namespace InitWorld
 	constexpr float PLAYERCOLLIDER = 320.f;
 
 	constexpr unsigned char ITEMSPAWNTIME = 20;
+
+	constexpr float MINIMUM_X = FIRST_TILEPOSITION_X - 25.f;
+	constexpr float MINIMUM_Y = FIRST_TILEPOSITION_Y - 25.f;
+	constexpr float MAXIMUM_X = FIRST_TILEPOSITION_X + TILEWITHGAP_SIZE * ( TILE_COUNTX - 1 ) + 25.f;
+	constexpr float MAXIMUM_Y = FIRST_TILEPOSITION_Y + TILEWITHGAP_SIZE * ( TILE_COUNTY - 1 ) + 25.f;
+
+	constexpr unsigned char LEFT_WALL = 0;
+	constexpr unsigned char RIGHT_WALL = 1;
+	constexpr unsigned char FORWARD_WALL = 2;
+	constexpr unsigned char BACKWARD_WALL = 3;
+	constexpr unsigned char NOTWALLCOLLISION = 4;
 }
 
 namespace ItemTypes
@@ -66,6 +77,7 @@ namespace ServerToClient
 	constexpr unsigned char COLLISION_PLAYER = 7;
 	constexpr unsigned char PLAYERSCORE = 8;
 	constexpr unsigned char ITEMSPAWN = 9;
+	constexpr unsigned char COLLISION_WALL = 10;
 
 }
 

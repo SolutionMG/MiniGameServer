@@ -188,19 +188,19 @@ void NetworkManager::Disconnect( const SOCKET& socket )
 			int id = user->GetId();
 			int roomNum = user->GetRoomNum();
 
-			auto& room = RoomManager::GetInstance().GetRoom(roomNum);
-
-			if ( room.GetTile(0).color == -1 )
+			RoomUnit* room = RoomManager::GetInstance().GetRoom(roomNum);
+			if ( !room )
 			{
-				PRINT_LOG( "존재 하지 않는 방입니다." );
+				PRINT_LOG( "존재하지 않는 방입니다." );
 				return;
 			}
 
-			room.PopPlayer( socket );
-			if ( room.GetPlayers().empty() )
+			room->PopPlayer( socket );
+			if ( room->GetPlayers().empty() )
 			{
-				RoomManager::GetInstance().DeleteRoom( roomNum );
+				RoomManager::GetInstance().PushRoom( room );
 				RoomManager::GetInstance().PushRoomNumber( roomNum );
+				RoomManager::GetInstance().DeleteRoom( roomNum );
 				std::cout << "방 삭제" << std::endl;
 			}
 			else
@@ -349,38 +349,44 @@ void NetworkManager::MainWorkProcess( )
 				[ userKey ]( )
 				{
 					int roomNum = -1;
-					auto& rooms = RoomManager::GetInstance( ).GetRooms( );
+					auto& rooms = RoomManager::GetInstance().GetRooms();
+					RoomUnit* currentRoom = nullptr;
 					for ( auto& [roomIndex, roomUnit] : rooms )
 					{
-						if ( roomUnit.GetPlayers( ).size( ) == 3 )
+						if ( roomUnit->GetPlayers().size() == 3 )
 							continue;
 						roomNum = roomIndex;
+						currentRoom = roomUnit;
 						break;
 					}
 					// 방 새로 생성 - 3명 이하인 방이 없을 시 
 					if ( roomNum == -1 )
 					{
-						roomNum = RoomManager::GetInstance( ).GetNewRoomNumber( );
+						roomNum = RoomManager::GetInstance().GetNewRoomNumber();
+						currentRoom = RoomManager::GetInstance().GetRoomUnitFromPools();
 					}
- 					auto& currentRoom = rooms[ roomNum ];
-					
+					rooms[ roomNum ] = currentRoom;
+ 					
+					if ( !currentRoom )
+						return;
+
 					// 방에 접속 유저 추가
-					currentRoom.PushPlayer( userKey );
+					currentRoom->PushPlayer( userKey );
 
 					// 유저 상태 갱신 및 현재 접속한 방 입력
-					UserManager::GetInstance( ).PushTask(
-						[ userKey, roomNum ]( )
+					UserManager::GetInstance().PushTask(
+						[ userKey, roomNum ]()
 						{
 							UserManager::GetInstance( ).GetUser( userKey )->SetState( EClientState::MATCHING );
 							UserManager::GetInstance( ).GetUser( userKey )->SetRoomNumber( roomNum );
 						} );
 
 					// 현재 방에 3명 존재 시 게임 시작
-					if ( currentRoom.GetPlayers( ).size( ) == 3 )
+					if ( currentRoom->GetPlayers().size() == 3 )
 					{
 						std::cout << "방에 3명 입장" << std::endl;
 						// 방에 있는 플레이어들에게 각각의 플레이어들 초기 정보 전송 (고유 색, 이름 등)
-						const std::vector<SOCKET> others = currentRoom.GetPlayers();
+						const std::vector<SOCKET> others = currentRoom->GetPlayers();
 						UserManager::GetInstance().PushTask(
 							[ roomNum, userKey, others ]()
 							{
@@ -431,7 +437,7 @@ void NetworkManager::MainWorkProcess( )
 										//초기 시작 타일 색 변경
 										auto& room = RoomManager::GetInstance().GetRooms()[ roomNum ];
 										for ( int i = 0; i < 3; ++i )
-											room.SetTileColor( InitWorld::FIRSTTILE_COLOR[ i ], i + 1 );
+											room->SetTileColor( InitWorld::FIRSTTILE_COLOR[ i ], i + 1 );
 									} );
 
 							} );

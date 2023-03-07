@@ -14,6 +14,30 @@ RoomManager::RoomManager()
 	{
 		m_roomNumberPools.push( i );
 	}
+
+	for ( int i = 0; i < InitServer::MAX_ROOMSIZE; ++i )
+	{
+		RoomUnit* room = new RoomUnit;
+		room->InitializeRoom();
+		m_roomPools.push( room );
+	}
+}
+
+RoomManager::~RoomManager()
+{
+	for ( auto& [index, room] : m_rooms )
+	{
+		delete room;
+		room = nullptr;
+	}
+	m_rooms.clear();
+
+	RoomUnit* room = nullptr;
+	while ( m_roomPools.try_pop( room ) )
+	{
+		delete room;
+		room = nullptr;
+	}
 }
 
 void RoomManager::RunTimer()
@@ -41,12 +65,12 @@ void RoomManager::UpdateRoomTimer()
 		if ( m_rooms.find( roomNum ) == m_rooms.end() )
 			continue;
 
-		auto& room = m_rooms[ roomNum ];
-		unsigned char time = room.GetTime();
-		room.SetTime( ++time );
+		RoomUnit* room = m_rooms[ roomNum ];
+		unsigned char time = room->GetTime();
+		room->SetTime( ++time );
 
 		//각 방의 플레이어들에게 타이머 Send
-		for ( auto& player : m_rooms[ roomNum ].GetPlayers() )
+		for ( auto& player : room->GetPlayers() )
 		{
 			PlayerUnit* user = UserManager::GetInstance().GetUser( player );
 			if ( !user )
@@ -69,7 +93,8 @@ void RoomManager::UpdateRoomTimer()
 
 		if ( time == 100 )
 		{
-			room.SetTime( 0 );
+			//게임 종료
+			room->SetTime( 0 );
 			m_deleteRoomTimers.emplace_back( roomNum );
 		}
 	}
@@ -94,17 +119,33 @@ void RoomManager::PushTimer( const int& roomNum )
 	m_updateRoomTimers.emplace_back( roomNum );
 }
 
-RoomUnit& RoomManager::GetRoom( const int& index )
+void RoomManager::PushRoom( RoomUnit* room )
+{
+	if ( !room )
+		return;
+	room->InitializeRoom();
+	m_roomPools.push( room );
+}
+
+RoomUnit* RoomManager::GetRoomUnitFromPools()
+{
+	RoomUnit* room = nullptr;
+	if ( !m_roomPools.try_pop( room ) )
+	{
+		room = new RoomUnit;
+		room->InitializeRoom();
+	}
+	return room;
+}
+
+RoomUnit* RoomManager::GetRoom( const int& index )
 {
 	if ( m_rooms.find( index ) == m_rooms.end() )
 	{
-		RoomUnit trash;
-		trash.SetTileColor( 0, -1 );
-		return trash;
+		return nullptr;
 	}
 	return m_rooms[ index ];
 }
-
 
 const int RoomManager::GetNewRoomNumber( )
 {

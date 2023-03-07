@@ -18,3 +18,14 @@ RoomUnit::RoomUnit()
 		}
 	}
 }
+
+void RoomUnit::InitializeRoom()
+{
+	for ( auto& block : m_blocks )
+	{
+		block.color = 0;
+	}
+
+	m_players.clear();
+	m_time =  0 ;
+}
