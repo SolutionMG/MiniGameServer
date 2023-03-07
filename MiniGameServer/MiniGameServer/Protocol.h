@@ -32,7 +32,7 @@ namespace InitWorld
 	constexpr float FIRST_TILEPOSITION_Y = 766.f;
 
 	//첫 시작 블록 색칠 인덱스
-	constexpr int FIRSTTILE_COLOR[ 3 ] = { 17,23,25 };
+	constexpr int FIRSTTILE_COLOR[ 3 ] = { 17,30,32 };
 }
 // PACKET TYPE
 
@@ -52,6 +52,7 @@ namespace ServerToClient
 	constexpr unsigned char MOVE = 4;
 	constexpr unsigned char TIME = 5;
 	constexpr unsigned char COLLISION_BLOCK = 6;
+	constexpr unsigned char PLAYERSCORE = 7;
 }
 
 // PACKET DECLARE
@@ -174,6 +175,15 @@ namespace Packet
 		unsigned char time; /*초 단위*/
 		Timer(unsigned char time)
 			:info(sizeof(Timer), ServerToClient::TIME), time(time) {}
+	};
+
+	// 플레이어 점수 패킷
+	struct Score
+	{
+		PacketInfo info;
+		int owner;
+		unsigned char score;
+		Score(const int owner, unsigned char score ) :info(sizeof( Score ), ServerToClient::PLAYERSCORE ), owner(owner), score(score){}
 	};
 }
 #pragma pack(pop)

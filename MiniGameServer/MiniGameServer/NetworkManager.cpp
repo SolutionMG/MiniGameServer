@@ -322,7 +322,7 @@ void NetworkManager::MainWorkProcess( )
 					const int userCount = static_cast< int >( users.size( ) );
 					if ( userCount <= InitServer::MAX_PLAYERNUM )
 					{
-						users[ userKey ] = UserManager::GetInstance().GetPlayerUnit();
+						users[ userKey ] = UserManager::GetInstance().GetPlayerUnitFromPools();
 						users[ userKey ]->SetSocket( userKey );
 						users[ userKey ]->SetOverlappedOperation( EOperationType::RECV );
 						users[ userKey ]->SetState( EClientState::ACCESS ); 
@@ -417,7 +417,9 @@ void NetworkManager::MainWorkProcess( )
 										Packet::CollisionTile tile( packet.owner, InitWorld::FIRSTTILE_COLOR[ count - 1 ] );
 										user[ player ]->SendPacket( tile );	
 
-										std::cout << player <<"에게 " <<other<<"정보 "<< "게임 시작 패킷 전송" << std::endl;
+										std::cout << player << "에게 " << other << "정보 " << "게임 시작 패킷 전송" << std::endl;
+										std::cout << InitWorld::FIRSTTILE_COLOR[ count - 1 ] << "초기 발판 색상 정보 주기" << std::endl;
+
 										++count;
 									}
 								}

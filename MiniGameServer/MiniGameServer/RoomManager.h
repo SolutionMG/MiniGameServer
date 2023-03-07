@@ -16,8 +16,9 @@ class RoomManager final
 {
 private:
 	std::unordered_map<int /*room number*/, RoomUnit>	m_rooms;
+
 	//방 번호 풀링
-	concurrency::concurrent_queue<int>	m_roomPools;
+	concurrency::concurrent_queue<int>	m_roomNumberPools;
 
 	// 인게임 타이머를 보낼 방들
 	std::vector<int/*방 번호*/> m_updateRoomTimers;
@@ -48,6 +49,7 @@ public:
 	virtual const std::string GetName() const noexcept final  { return  "RoomManager"; }	
 	// 방 관리 객체 반환
 	RoomUnit& GetRoom( const int& index );
+
 	std::unordered_map<int, RoomUnit>& GetRooms() { return m_rooms; }
 	const int GetNewRoomNumber();
 

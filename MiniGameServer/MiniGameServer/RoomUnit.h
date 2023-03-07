@@ -10,7 +10,7 @@ struct Tile
 	float y;
 	short color;
 public:
-	Tile(){}
+	Tile(): index(-1), x(), y(), color() {}
 	Tile(float x, float y) :index(-1),x(x),y(y),color(0) {}
 };
 

@@ -4,14 +4,14 @@
 #include "UserManager.h"
 #include "PlayerUnit.h"
 
-RoomManager::RoomManager( )
+RoomManager::RoomManager()
 	:m_updateRoomTimers(), m_timerThread()
 {
 	m_rooms.reserve( InitServer::MAX_ROOMSIZE );
-	
+
 	for ( int i = 0; i < InitServer::MAX_ROOMSIZE; ++i )
 	{
-		m_roomPools.push( i );
+		m_roomNumberPools.push( i );
 	}
 }
 
@@ -74,7 +74,7 @@ void RoomManager::UpdateRoomTimer()
 
 void RoomManager::PushRoomNumber( const int& number )
 {
-	m_roomPools.push( number );
+	m_roomNumberPools.push( number );
 }
 
 void RoomManager::PushTimer( const int& roomNum )
@@ -93,12 +93,13 @@ RoomUnit& RoomManager::GetRoom( const int& index )
 	return m_rooms[ index ];
 }
 
+
 const int RoomManager::GetNewRoomNumber( )
 {
 	int room = -1;
-	if ( !m_roomPools.try_pop( room ) )
+	if ( !m_roomNumberPools.try_pop( room ) )
 	{
-		room = static_cast< int >( m_roomPools.unsafe_size( ) ) + 1;
+		room = static_cast< int >( m_roomNumberPools.unsafe_size( ) ) + 1;
 	}
 	return room;
 }

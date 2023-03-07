@@ -116,10 +116,12 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		//return;
 	}
 
-	m_users[ socket ]->SetPosition( currentPos );
-	const short color = m_users[ socket ]->GetColor();
+	PlayerUnit* player = m_users[ socket ];
 
-	int roomNum = m_users[ socket ]->GetRoomNum();
+	player->SetPosition( currentPos );
+	const short color = player->GetColor();
+
+	int roomNum = player->GetRoomNum();
 	auto& room = RoomManager::GetInstance().GetRoom( roomNum );
 
 	if ( room.GetTile(0).color == -1 )
@@ -138,29 +140,72 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		}
 	}
 
-	// 충돌
+	// 발판 충돌
 	{
 		int xIndex = static_cast< int >( ( currentPos.x - ( InitWorld::FIRST_TILEPOSITION_X - InitWorld::TILEWITHGAP_SIZE / 2.f ) ) / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 X인덱스
 		int yIndex = static_cast< int >( ( currentPos.y - ( InitWorld::FIRST_TILEPOSITION_Y - InitWorld::TILEWITHGAP_SIZE / 2.f ) ) / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 Y인덱스
 		int blockIndex = xIndex + ( yIndex * InitWorld::TILE_COUNTX );
 
 		if ( blockIndex < 0 || blockIndex > 48 )
+		{
+			PRINT_LOG( "맵 외부의 좌표 수신" );
 			return;
-
+		}
 		const Tile& tile = room.GetTile( blockIndex );
 
-		if ( tile.color == m_users[ socket ]->GetColor() )
+		if ( tile.color == player->GetColor() )
 			return;
+		
 
 		if ( MathManager::GetInstance().CollisionPointAndRectangle( currentPos.x, currentPos.y, tile.x, tile.y) )
 		{
-			std::cout << "충돌 정보 전송" << blockIndex << std::endl;
+			//std::cout << player->GetId() << "의 충돌 정보 전송" << blockIndex << std::endl;
+
+			unsigned char basePlayerScore = 0;
+			int basePlayer = -1;
+
+			//하얀 색 발판이면 점수를 하락시킬 플레이어가 없음
+			if ( tile.color != 0 )
+			{
+				// 기존 색상 플레이어 점수 하락
+				for ( auto& index : players )
+				{
+					if ( m_users[ index ]->GetColor() == tile.color )
+					{
+						basePlayerScore = m_users[ index ]->GetScore();
+						if ( basePlayerScore > 0 )
+						{
+							basePlayer = m_users[ index ]->GetId();
+							m_users[ index ]->SetScore( --basePlayerScore );
+						}
+						break;
+					}
+				}
+			}
+			
+			// 발판 충돌 플레이어 점수 상승
+			unsigned char newPlayerScore = player->GetScore() + 1;
+			player->SetScore( newPlayerScore );
+
+			Packet::Score upScore( player->GetId(), newPlayerScore );
+			Packet::Score downScore( basePlayer, basePlayerScore );
 
 			// 같은 방에 있는 플레이어들에게 정보 전송
 			for ( const auto& index : players )
 			{
+				// 충돌 정보 전송
 				Packet::CollisionTile collisionPacket = Packet::CollisionTile( send.owner, blockIndex );
 				m_users[ index ]->SendPacket( collisionPacket );
+
+				//// 점수 상승 정보 전송
+				//m_users[ index ]->SendPacket( upScore );
+
+				//// 점수 하락시킬 플레이어가 있을 경우 해당 정보 전송
+				//if ( basePlayer != -1 )
+				//{
+				//	m_users[ index ]->SendPacket( downScore );
+				//}
+
 			}
 
 			//타일 색 충돌 플레이어 색으로 변경
@@ -214,7 +259,7 @@ PlayerUnit* UserManager::GetUser( const SOCKET& socket )
 	return  m_users[ socket ]; 
 }
 
-PlayerUnit* UserManager::GetPlayerUnit( )
+PlayerUnit* UserManager::GetPlayerUnitFromPools( )
 {
 	PlayerUnit* player = nullptr;
 	if ( !m_userPools.try_pop( player ) )
