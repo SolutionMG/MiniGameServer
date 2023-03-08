@@ -212,7 +212,8 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		{
 			for ( auto& usingItem : collisionItems )
 			{
-				m_users[ index ]->SendPacket( usingItem );
+				//봉인
+				//m_users[ index ]->SendPacket( usingItem );
 			}
 		}
 
@@ -221,8 +222,12 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		if ( !collisionItems.empty() )
 		{
 			RoomManager::GetInstance().PushTask(
-				[ &collisionItems, &room ]()
+				[ collisionItems, roomNum ]()
 				{
+					RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
+					
+					if ( !room )
+						return;
 					// 충돌된 아이템 
 					for ( auto& item : collisionItems )
 					{
