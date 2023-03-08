@@ -28,6 +28,8 @@ public:
 	explicit PlayerUnit( const SOCKET& socket );
 	virtual ~PlayerUnit( ) noexcept;
 
+	void Initialize();
+
 	// Get
 	const Position& GetPosition( ) { return m_position; }
 	const short& GetColor() { return m_color; }

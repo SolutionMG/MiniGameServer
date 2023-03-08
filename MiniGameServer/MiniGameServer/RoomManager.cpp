@@ -18,7 +18,7 @@ RoomManager::RoomManager()
 	for ( int i = 0; i < InitServer::MAX_ROOMSIZE; ++i )
 	{
 		RoomUnit* room = new RoomUnit;
-		room->InitializeRoom();
+		room->Initialize();
 		m_roomPools.push( room );
 	}
 }
@@ -53,8 +53,7 @@ void RoomManager::RunTimer()
 				std::this_thread::sleep_for( static_cast< std::chrono::milliseconds >( 1000 ) );
 			}
 
-		} );
-			
+		} );	
 }
 
 void RoomManager::UpdateRoomTimer()
@@ -166,7 +165,7 @@ void RoomManager::PushRoom( RoomUnit* room )
 {
 	if ( !room )
 		return;
-	room->InitializeRoom();
+	room->Initialize();
 	m_roomPools.push( room );
 }
 
@@ -176,7 +175,7 @@ RoomUnit* RoomManager::GetRoomUnitFromPools()
 	if ( !m_roomPools.try_pop( room ) )
 	{
 		room = new RoomUnit;
-		room->InitializeRoom();
+		room->Initialize();
 	}
 	return room;
 }

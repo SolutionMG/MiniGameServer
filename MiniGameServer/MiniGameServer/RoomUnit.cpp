@@ -2,7 +2,7 @@
 #include "RoomUnit.h"
 
 RoomUnit::RoomUnit()
-	:m_time( 0 )
+	:m_time( 0 ), m_roomState(RoomState::END)
 {
 	m_players.reserve( InitWorld::INGAMEPLAYER_NUM );
 	m_blocks.reserve( InitWorld::TILE_COUNTX * InitWorld::TILE_COUNTY );
@@ -20,13 +20,14 @@ RoomUnit::RoomUnit()
 	}
 }
 
-void RoomUnit::InitializeRoom()
+void RoomUnit::Initialize()
 {
 	for ( auto& block : m_blocks )
 	{
 		block.color = 0;
 	}
-
+	m_items.clear();
+	m_roomState = RoomState::END;
 	m_players.clear();
 	m_time =  0 ;
 }

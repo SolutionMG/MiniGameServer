@@ -146,7 +146,7 @@ namespace Packet
 			:info(sizeof(Timer), ServerToClient::TIME), time(time) {}
 	};
 
-	// 플레이어 점수 패킷
+	// 플레이어 점수 갱신 패킷
 	struct Score
 	{
 		PacketInfo info;
@@ -155,19 +155,31 @@ namespace Packet
 		Score(const int owner, unsigned char score ) :info(sizeof( Score ), ServerToClient::PLAYERSCORE ), owner(owner), score(score){}
 	};
 
-	//아이템 스폰 패킷
+	// 아이템 스폰 패킷
 	// 해당 좌표에 해당 타입의 아이템 클라이언트에 생성
-
+	
 	struct ItemSpawn
 	{
 		PacketInfo info;
 		int itemIndex;			/*맵에 생성된 아이템 구분용 번호 */
-		unsigned char itemtype;	/*아이템 종류*/
+		unsigned char itemType;	/*아이템 종류*/
 		float x; 
 		float y;
-		ItemSpawn(float x, float y, unsigned char itemtype, int itemIndex ) :info( sizeof( ItemSpawn ), ServerToClient::ITEMSPAWN ),x(x), y(y), itemtype(itemtype), itemIndex( itemIndex ){}
+		ItemSpawn(float x, float y, unsigned char itemtype, int itemIndex ) :info( sizeof( ItemSpawn ), ServerToClient::ITEMSPAWN ),x(x), y(y), itemType(itemtype), itemIndex( itemIndex ){}
 	};
 	
+	// 아이템 충돌 후 아이템 사용 정보 전송 패킷
+	// owner 플레이어에게 아이템 효과 발동
+	// 해당 인덱스아이템 맵에서 삭제
+	struct ItemUse
+	{
+		PacketInfo info;
+		int itemIndex;			/*맵에 생성된 아이템 구분용 번호*/
+		unsigned char itemType;	/*아이템 종류*/
+		int owner;				/*아이템 사용자*/
+		ItemUse( int owner, unsigned char itemtype, int itemIndex ) :info( sizeof( ItemUse ), ServerToClient::ITEM_USE ), itemType( itemtype ), itemIndex( itemIndex ), owner(owner) {}
+	};
+
 	//플레이어 인덱스 
 	//플레이어 최종 점수
 	struct FinishPlayerInfo
@@ -176,6 +188,7 @@ namespace Packet
 		unsigned char score;
 	};
 
+	//플레이어 최종 점수 및 게임 죵료 알림 패킷
 	struct EndGame
 	{
 		PacketInfo info;

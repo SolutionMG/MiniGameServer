@@ -14,11 +14,7 @@ UserManager::UserManager( )
 	for ( int i = 0; i < InitServer::MAX_PLAYERNUM; ++i )
 	{
 		PlayerUnit* player = new PlayerUnit(INVALID_SOCKET);
-		player->SetName( "Default" );
-		player->SetState( EClientState::DISCONNECT );
-		player->SetPosition( Position( 0.f, 0.f ) );
-		player->SetRoomNumber( -1 );
-		player->SetId( -1 );
+		player->Initialize();
 		m_userPools.push( player );
 	}
 
@@ -195,7 +191,48 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		}
 	}
 
+	// 아이템과 플레이어 충돌
+	{
+		auto& items = room->GetItems();
+		std::vector<Packet::ItemUse> collisionItems;
+		collisionItems.reserve( static_cast< int >( ( InitWorld::ENDGAMETIME / InitWorld::ITEMSPAWNTIME ) ) );
 
+		for ( auto& item : items )
+		{
+			if ( MathManager::GetInstance().CollisionSphere(currentPos.x, currentPos.y, item.x, item.y, (InitWorld::ITEM_SIZE / 2.f) + (InitWorld::PLAYERCOLLIDER / 2.f) ) )
+			{
+				// 플레이어와 아이템 충돌
+				// 해당 정보 플레이어들에게 전송 ( 어떤 아이템과 어떤 플레이어가 충돌했는 가)
+				Packet::ItemUse usingItem(player->GetId(), item.itemType, item.index);
+				collisionItems.emplace_back( usingItem );
+			}
+		}
+		//충돌한 아이템 정보 send
+		for ( auto& index : players )
+		{
+			for ( auto& usingItem : collisionItems )
+			{
+				m_users[ index ]->SendPacket( usingItem );
+			}
+		}
+
+		// 사용된 아이템 방에서 삭제
+
+		if ( !collisionItems.empty() )
+		{
+			RoomManager::GetInstance().PushTask(
+				[ &collisionItems, &room ]()
+				{
+					// 충돌된 아이템 
+					for ( auto& item : collisionItems )
+					{
+						room->PopItem( item.itemIndex );
+					}
+					std::cout << "사용된 아이템 삭제" << std::endl;
+				} );
+		}
+	}
+	
 	// 발판 충돌
 	{
 		int xIndex = static_cast< int >( ( currentPos.x - ( InitWorld::FIRST_TILEPOSITION_X - InitWorld::TILEWITHGAP_SIZE / 2.f ) ) / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 X인덱스
@@ -292,12 +329,7 @@ void UserManager::PushPlayerUnit( PlayerUnit* player )
 	if ( !player )
 		return;
 
-	player->SetName( "default" );
-	player->SetState( EClientState::DISCONNECT );
-	player->SetPosition( Position( 0.f, 0.f ) );
-	player->SetRoomNumber( -1 );
-	player->SetId( -1 );
-
+	player->Initialize();
 	m_userPools.push( player );
 }
 
@@ -322,11 +354,7 @@ PlayerUnit* UserManager::GetPlayerUnitFromPools( )
 	if ( !m_userPools.try_pop( player ) )
 	{
 		player = new PlayerUnit(INVALID_SOCKET);
-		player->SetName( "default" );
-		player->SetState( EClientState::DISCONNECT );
-		player->SetPosition( Position( 0.f, 0.f) );
-		player->SetRoomNumber( -1 );
-		player->SetId( -1 );
+		player->Initialize();
 	}
 
 	return player;

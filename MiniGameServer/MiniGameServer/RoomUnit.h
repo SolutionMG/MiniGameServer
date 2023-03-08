@@ -26,6 +26,11 @@ public:
 	Item( float x, float y, unsigned char itemType, int index ) : x( x ), y( y ), itemType( itemType ), index(index) {}
 };
 
+enum class RoomState : char
+{
+	MATCHING, GAME, END
+};
+
 class RoomUnit final
 {
 private:
@@ -39,13 +44,15 @@ private:
 
 	//맵상에 배치된 아이템들
 	std::vector<Item> m_items;
+
+	RoomState m_roomState;
 public:
 	explicit RoomUnit( );
 	virtual ~RoomUnit( ) = default;
 
 public:
 	// 방 객체 초기화
-	void InitializeRoom();
+	void Initialize();
 
 	//set
 	void SetTime( const unsigned char& time ){ m_time = time; }

@@ -28,8 +28,8 @@ namespace InitWorld
 
 	// 블록, 플레이어 크기 정보
 	constexpr float TILECOLLIDER_SIZE = 159.5f;
-	constexpr float TILEWITHGAP_SIZE = 360.f; /*블록 간 틈을 포함한 거리*/
-	constexpr float PLAYERCOLLIDER = 320.f;
+	constexpr float TILEWITHGAP_SIZE = 360.f;	/*블록 간 틈을 포함한 거리*/
+	constexpr float PLAYERCOLLIDER = 320.f;		/*플레이어 충돌체 지름*/
 
 	//0번 인덱스 블록 위치
 	constexpr float FIRST_TILEPOSITION_X = 646.f;
@@ -44,6 +44,7 @@ namespace InitWorld
 	// 게임 종료 시간
 	constexpr unsigned char ENDGAMETIME = 90;
 
+	// 벽 정보
 	constexpr float MINIMUM_X = FIRST_TILEPOSITION_X - 25.f;
 	constexpr float MINIMUM_Y = FIRST_TILEPOSITION_Y - 25.f;
 	constexpr float MAXIMUM_X = FIRST_TILEPOSITION_X + TILEWITHGAP_SIZE * ( TILE_COUNTX - 1 ) + 25.f;
@@ -54,6 +55,9 @@ namespace InitWorld
 	constexpr unsigned char FORWARD_WALL = 2;
 	constexpr unsigned char BACKWARD_WALL = 3;
 	constexpr unsigned char NOTWALLCOLLISION = 4;
+
+	// 아이템 크기
+	constexpr float ITEM_SIZE = 30.f;		/*아이템 충돌체 지름*/
 }
 
 namespace ItemTypes
@@ -87,7 +91,8 @@ namespace ServerToClient
 	constexpr unsigned char PLAYERSCORE = 8;
 	constexpr unsigned char ITEMSPAWN = 9;
 	constexpr unsigned char COLLISION_WALL = 10;
-	constexpr unsigned char ENDGAME = 11;
+	constexpr unsigned char ITEM_USE = 11;
+	constexpr unsigned char ENDGAME = 12;
 
 }
 
