@@ -19,25 +19,30 @@ namespace InitPlayer
 
 namespace InitWorld
 {
-	// 블록 정보
+	// 블록 갯수 
 	constexpr int TILE_COUNTX = 7;
 	constexpr int TILE_COUNTY = 7;
 
-	// 반지름
+	// 인게임 플레이어 수
+	constexpr int INGAMEPLAYER_NUM = 3;
+
+	// 블록, 플레이어 크기 정보
 	constexpr float TILECOLLIDER_SIZE = 159.5f;
 	constexpr float TILEWITHGAP_SIZE = 360.f; /*블록 간 틈을 포함한 거리*/
+	constexpr float PLAYERCOLLIDER = 320.f;
 
 	//0번 인덱스 블록 위치
 	constexpr float FIRST_TILEPOSITION_X = 646.f;
 	constexpr float FIRST_TILEPOSITION_Y = 766.f;
 
-	//첫 시작 블록 색칠 인덱스
+	//첫 시작 블록, 색칠되어있을 인덱스
 	constexpr int FIRSTTILE_COLOR[ 3 ] = { 17,30,32 };
 
-	constexpr int INGAMEPLAYER_NUM = 3;
-	constexpr float PLAYERCOLLIDER = 320.f;
-
+	// 아이템 젠 시간
 	constexpr unsigned char ITEMSPAWNTIME = 20;
+
+	// 게임 종료 시간
+	constexpr unsigned char ENDGAMETIME = 90;
 
 	constexpr float MINIMUM_X = FIRST_TILEPOSITION_X - 25.f;
 	constexpr float MINIMUM_Y = FIRST_TILEPOSITION_Y - 25.f;
@@ -54,7 +59,11 @@ namespace InitWorld
 namespace ItemTypes
 {
 	//아이템 종류
-	const unsigned char REVERSE_MOVE = 0; //조작키 반대로 변경
+	const unsigned char REVERSE_LEFTRIGHT = 0;			//좌우 조작키 반대로 변경
+	const unsigned char REVERSE_FORWARDBACKWARD = 1;	//앞뒤 조작키 반대로 변경
+	const unsigned char STOP_ALLCHARACTER = 2;			//모든 캐릭터 멈추게 하기
+	const unsigned char ITEMTYPES_SIZE = 3;				//아이템 갯수
+
 }
 
 // PACKET TYPE
@@ -78,6 +87,7 @@ namespace ServerToClient
 	constexpr unsigned char PLAYERSCORE = 8;
 	constexpr unsigned char ITEMSPAWN = 9;
 	constexpr unsigned char COLLISION_WALL = 10;
+	constexpr unsigned char ENDGAME = 11;
 
 }
 

@@ -157,13 +157,30 @@ namespace Packet
 
 	//아이템 스폰 패킷
 	// 해당 좌표에 해당 타입의 아이템 클라이언트에 생성
+
 	struct ItemSpawn
 	{
 		PacketInfo info;
-		unsigned char itemtype;
+		int itemIndex;			/*맵에 생성된 아이템 구분용 번호 */
+		unsigned char itemtype;	/*아이템 종류*/
 		float x; 
 		float y;
-		ItemSpawn(float x, float y, unsigned char itemtype) :info( sizeof( ItemSpawn ), ServerToClient::ITEMSPAWN ),x(x), y(y), itemtype(itemtype) {}
+		ItemSpawn(float x, float y, unsigned char itemtype, int itemIndex ) :info( sizeof( ItemSpawn ), ServerToClient::ITEMSPAWN ),x(x), y(y), itemtype(itemtype), itemIndex( itemIndex ){}
+	};
+	
+	//플레이어 인덱스 
+	//플레이어 최종 점수
+	struct FinishPlayerInfo
+	{
+		int owner;
+		unsigned char score;
+	};
+
+	struct EndGame
+	{
+		PacketInfo info;
+		FinishPlayerInfo playerInfo[ 3 ];
+		EndGame() : info( sizeof( EndGame ), ServerToClient::ENDGAME ), playerInfo() {};
 	};
 }
 #pragma pack(pop)

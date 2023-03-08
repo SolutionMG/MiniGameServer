@@ -4,8 +4,9 @@
 RoomUnit::RoomUnit()
 	:m_time( 0 )
 {
-	m_players.reserve( 3 );
+	m_players.reserve( InitWorld::INGAMEPLAYER_NUM );
 	m_blocks.reserve( InitWorld::TILE_COUNTX * InitWorld::TILE_COUNTY );
+	m_items.reserve( InitWorld::ENDGAMETIME / InitWorld::ITEMSPAWNTIME );
 
 	for ( int i = 0; i < InitWorld::TILE_COUNTY; ++i )
 	{

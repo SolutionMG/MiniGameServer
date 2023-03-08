@@ -70,32 +70,75 @@ void RoomManager::UpdateRoomTimer()
 		room->SetTime( ++time );
 
 		//각 방의 플레이어들에게 타이머 Send
-		for ( auto& player : room->GetPlayers() )
+		auto& players = room->GetPlayers();
+		Packet::Timer packet( time );
+
+		for ( auto& player : players )
 		{
 			PlayerUnit* user = UserManager::GetInstance().GetUser( player );
 			if ( !user )
 				continue;
 
-			Packet::Timer packet( time );
 			user->SendPacket( packet );
 		}
 
 		if ( time > 0 && ( time % InitWorld::ITEMSPAWNTIME == 0 ) )
 		{
-			//해당 방에 아이템 추가 및 클라이언트에게 아이템 위치 및 타입 전송
+			// 해당 방에 아이템 추가 및 클라이언트에게 아이템 위치 및 타입 전송
+			int randomPositionIndex = MathManager::GetInstance().randomInteger( 0, 48 );
+			int itemType = MathManager::GetInstance().randomInteger( 0, ItemTypes::ITEMTYPES_SIZE );
+			const Tile tile = room->GetTile( randomPositionIndex );
+			int itemIndex = static_cast< int >( room->GetItems().size() );
 
-			//int randomIndex = MathManager::GetInstance().randomInteger( 0, 48 );
-			//int itemType = MathManager::GetInstance().randomInteger( 0, 3 );
-			//const Tile tile = room.GetTile( randomIndex );
-			//Packet::ItemSpawn item( tile.x, tile.y, static_cast< unsigned char >( itemType ) );
-			//itemspawn 플레이어들에게 send, room객체에도 아이템 정보 push
+		
+			Packet::ItemSpawn itemSpawn( tile.x, tile.y, static_cast< unsigned char >( itemType ), itemIndex );
+			// room객체에 아이템 정보 push
+			Item newItem( tile.x, tile.y, static_cast< unsigned char >( itemType ), itemIndex );
+			room->PushItem( newItem );
+
+			for ( auto& player : players )
+			{
+				PlayerUnit* user = UserManager::GetInstance().GetUser( player );
+				if ( !user )
+					continue;
+				// 봉인
+				//user->SendPacket( itemSpawn );
+			}
+			std::cout << roomNum << "방 " << itemType << "번 아이템 스폰" << std::endl;
 		}
 
-		if ( time == 100 )
+		if ( time == InitWorld::ENDGAMETIME )
 		{
-			//게임 종료
+			// 게임 종료
+			// 타이머에서 해당 방 삭제, 게임 종료 패킷 각 플레이어들에게 전송
 			room->SetTime( 0 );
 			m_deleteRoomTimers.emplace_back( roomNum );
+
+			Packet::EndGame finalinfo;
+			int index = 0;
+
+			for ( auto& player : players )
+			{
+				PlayerUnit* user = UserManager::GetInstance().GetUser( player );
+				if ( !user )
+					continue;
+
+				//게임 종료 패킷 전송
+				finalinfo.playerInfo[ index ].owner = user->GetId();
+				finalinfo.playerInfo[ index++ ].score = user->GetScore();
+			}
+
+			for ( auto& player : players )
+			{
+				PlayerUnit* user = UserManager::GetInstance().GetUser( player );
+				if ( !user )
+					continue;
+
+				//게임 종료 패킷 전송
+				//봉인
+				//user->SendPacket( finalinfo );
+			}
+			std::cout << "게임 종료 시간 도달" << std::endl;
 		}
 	}
 

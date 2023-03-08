@@ -253,6 +253,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 				Packet::CollisionTile collisionPacket = Packet::CollisionTile( send.owner, blockIndex );
 				m_users[ index ]->SendPacket( collisionPacket );
 
+				//ºÀÀÎ
 				//// Á¡¼ö »ó½Â Á¤º¸ Àü¼Û
 				//m_users[ index ]->SendPacket( upScore );
 

@@ -17,12 +17,13 @@ public:
 // 인게임 상의 item들
 struct Item
 {
+	int index;
 	float x;
 	float y;
 	unsigned char itemType;
 public:
-	Item() : x(), y(), itemType() {}
-	Item( float x, float y, unsigned char itemType ) : x( x ), y( y ), itemType( itemType ) {}
+	Item() : index(), x(), y(), itemType() {}
+	Item( float x, float y, unsigned char itemType, int index ) : x( x ), y( y ), itemType( itemType ), index(index) {}
 };
 
 class RoomUnit final
@@ -35,12 +36,15 @@ private:
 	
 	//방의 발판 블록들
 	std::vector<Tile> m_blocks;
+
+	//맵상에 배치된 아이템들
+	std::vector<Item> m_items;
 public:
 	explicit RoomUnit( );
 	virtual ~RoomUnit( ) = default;
 
 public:
-	
+	// 방 객체 초기화
 	void InitializeRoom();
 
 	//set
@@ -49,10 +53,17 @@ public:
 	void PopPlayer( const SOCKET& socket ) { std::erase_if( m_players, [ &socket ]( SOCKET dest ) { return socket == dest; } );	}
 	void SetTileColor( const int& index, const short& color ) { m_blocks[index].color = color; }
 
+	// 아이템 관리 객체에 해당 방에 젠 되어있는 아이템 정보 넣기
+	void PushItem( const Item& item ) { m_items.emplace_back( item ); }
+
 	//get
 	const std::vector<SOCKET>& GetPlayers( ) {return m_players;}
 	const unsigned char& GetTime(){ return m_time; }
 	const Tile& GetTile( const int& index ){ return m_blocks[ index ]; }
+	const std::vector<Item>& GetItems() { return m_items; }
+
+	// 플레이어와 충돌한 아이템 삭제
+	void PopItem( const int& index ) { std::erase_if( m_items, [ &index ]( const Item& dest ) {return index == dest.index; } ); }
 
 };
 
