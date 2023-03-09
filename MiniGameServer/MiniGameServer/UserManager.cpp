@@ -80,6 +80,7 @@ void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 
 	Packet::LoginRequest data = *reinterpret_cast< Packet::LoginRequest* > ( packet );
 	int baseScore = 0;
+#if NDEBUG
 	if ( DataBaseManager::GetInstance().LogOn( data.name, data.password, baseScore ) )
 	{
 		Packet::LoginResult send( id, ServerToClient::LOGON_OK );
@@ -92,6 +93,8 @@ void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 		strcpy_s( send.name, data.name );
 		m_users[ socket ]->SendPacket( send );
 	}
+#endif // _DEBUG
+
 }
 
 void UserManager::ProcessMove( const SOCKET& socket, char* packet )
@@ -99,8 +102,16 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	Packet::Move send = *reinterpret_cast< Packet::Move* > ( packet );
 	send.info.type = ServerToClient::MOVE;
 
+	if ( m_users.find( socket ) == m_users.end() )
+		return;
+
+	PlayerUnit* player = m_users[ socket ];
+
+	if ( !player )
+		return;
+
 	//°ËÁõ
-	Position previousPos = m_users[ socket ]->GetPosition();
+	Position previousPos = player->GetPosition();
 	Position currentPos = Position( send.x, send.y );
 
 	float distance = MathManager::GetInstance().Distance2D( previousPos.x, previousPos.y, currentPos.x, currentPos.y );
@@ -112,7 +123,6 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		return;
 	}
 
-	PlayerUnit* player = m_users[ socket ];
 
 	player->SetPosition( currentPos );
 	const short color = player->GetColor();
@@ -144,7 +154,8 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		if ( returnValue != InitWorld::NOTWALLCOLLISION)
 		{
 			Packet::CollisionWall wall( player->GetId(), returnValue );
-			
+			wall.directionX = send.directionX;
+			wall.directionY = send.directionY;
 			for ( const auto& index : players )
 			{
 				m_users[ index ]->SendPacket( wall );

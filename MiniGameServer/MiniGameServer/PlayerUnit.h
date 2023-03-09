@@ -37,7 +37,7 @@ public:
 
 	// Set
 	void SetName( std::string name ) { m_name = name; }
-	void SetPosition( const Position& position ) { memcpy_s( &m_position, sizeof( m_position ), &position, sizeof( position ) ); }
+	void SetPosition( const Position& position ) { m_position.x = position.x; m_position.y = position.y; }
 	void SetColor( const short& color ) { m_color = color; }
 	void SetScore( const unsigned char& score ) { m_score = score; }
 };

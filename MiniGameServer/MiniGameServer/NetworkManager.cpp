@@ -101,7 +101,8 @@ bool NetworkManager::RunServer( )
 	}
 
 #if NDEBUG
-	DataBaseManager::GetInstance( );
+	//DataBaseManager::GetInstance().DBConnect();
+	//DataBaseManager::GetInstance().SignUp( "ÁöÀº", "1234" );
 #endif
 	UserManager::GetInstance().Run();
 	RoomManager::GetInstance().Run();

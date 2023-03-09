@@ -131,9 +131,11 @@ namespace Packet
 		PacketInfo info;
 		int owner;
 		unsigned char wallNum;
+		float directionX;
+		float directionY;
 
 		CollisionWall(const int owner, const unsigned char wallNum)
-			: info(sizeof( CollisionWall ), ServerToClient::COLLISION_WALL ),owner(owner), wallNum(wallNum) {}
+			: info(sizeof( CollisionWall ), ServerToClient::COLLISION_WALL ),owner(owner), wallNum(wallNum), directionX(), directionY(){}
 	};
 
 	// 서버가 클라이언트에게 보내는 인게임 타이머

@@ -24,12 +24,12 @@ public:
 	explicit DataBaseManager( );
 	virtual ~DataBaseManager( );
 
-private:
-	bool DBConnect( );
-
 public:
+#if NDEBUG
+	bool DBConnect();
 	bool SignUp( const std::string& name, const std::string& password );
-	bool LogOn( const std::string& name, const std::string& password, int& bestScore);
+	bool LogOn( const std::string& name, const std::string& password, int& bestScore OUT );
+#endif
 };
 
 #endif // !DATABASEMANAGER_H
