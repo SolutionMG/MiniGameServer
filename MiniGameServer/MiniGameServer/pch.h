@@ -17,9 +17,14 @@
 #include<string>
 #include<mutex>
 
-
 //User
 #include "Protocol.h"
 #include"Define.h"
 
+//DB
+#pragma comment(lib, "libmySQL.lib")
+#pragma comment(lib, "mysqlcppconn.lib")
+
+
 #endif // !PCH_H
+

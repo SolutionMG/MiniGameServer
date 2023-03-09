@@ -5,6 +5,8 @@
 #include <sql.h>
 #include <sqlext.h>
 
+#include <mysql.h>
+
 #include "Singleton.hpp"
 class DataBaseManager
 	: public Base::TSingleton< DataBaseManager >

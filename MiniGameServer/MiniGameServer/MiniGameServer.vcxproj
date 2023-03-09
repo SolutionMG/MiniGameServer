@@ -70,6 +70,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\Program Files\MySQL\MySQL Server 8.0\include;C:\Program Files\MySQL\Connector C++ 8.0\include;C:\Program Files\MySQL\Connector C++ 8.0\include;C:\Program Files\MySQL\MySQL Server 8.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files\MySQL\MySQL Server 8.0\lib;C:\Program Files\MySQL\Connector C++ 8.0\lib64;C:\Program Files\MySQL\Connector C++ 8.0\lib64;C:\Program Files\MySQL\MySQL Server 8.0\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Program Files\MySQL\MySQL Server 8.0\include;C:\Program Files\MySQL\Connector C++ 8.0\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>C:\Program Files\MySQL\MySQL Server 8.0\lib;C:\Program Files\MySQL\Connector C++ 8.0\lib64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -106,10 +114,13 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>C:\Program Files\MySQL\Connector C++ 8.0\include\mysqlx;C:\Program Files\MySQL\Connector C++ 8.0\include\jdbc;C:\Program Files\MySQL\Connector C++ 8.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\MySQL\Connector C++ 8.0\lib64\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -122,12 +133,15 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalIncludeDirectories>C:\Program Files\MySQL\Connector C++ 8.0\include\mysqlx;C:\Program Files\MySQL\Connector C++ 8.0\include\jdbc;C:\Program Files\MySQL\Connector C++ 8.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\MySQL\Connector C++ 8.0\lib64\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

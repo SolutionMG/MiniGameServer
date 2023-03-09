@@ -207,20 +207,20 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 				collisionItems.emplace_back( usingItem );
 			}
 		}
-		//충돌한 아이템 정보 send
-		for ( auto& index : players )
-		{
-			for ( auto& usingItem : collisionItems )
-			{
-				//봉인
-				//m_users[ index ]->SendPacket( usingItem );
-			}
-		}
-
-		// 사용된 아이템 방에서 삭제
 
 		if ( !collisionItems.empty() )
 		{
+			//충돌한 아이템 정보 send
+			for ( auto& index : players )
+			{
+				for ( auto& usingItem : collisionItems )
+				{
+					//봉인
+					//m_users[ index ]->SendPacket( usingItem );
+				}
+			}
+
+			// 사용된 아이템 방에서 삭제
 			RoomManager::GetInstance().PushTask(
 				[ collisionItems, roomNum ]()
 				{
@@ -270,12 +270,17 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 				{
 					if ( m_users[ index ]->GetColor() == tile.color )
 					{
+						// 해당 플레이어 점수는 정상적이라면 1점 이상이어야 함.
 						basePlayerScore = m_users[ index ]->GetScore();
-						if ( basePlayerScore > 0 )
+
+						if ( basePlayerScore == 0 )
 						{
-							basePlayer = m_users[ index ]->GetId();
-							m_users[ index ]->SetScore( --basePlayerScore );
+							PRINT_LOG( "점수 오차 발생" );
+							break;
 						}
+
+						basePlayer = m_users[ index ]->GetId();
+						m_users[ index ]->SetScore( --basePlayerScore );
 						break;
 					}
 				}

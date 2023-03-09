@@ -353,7 +353,7 @@ void NetworkManager::MainWorkProcess( )
 					RoomUnit* currentRoom = nullptr;
 					for ( auto& [roomIndex, roomUnit] : rooms )
 					{
-						if ( roomUnit->GetPlayers().size() == 3 )
+						if ( roomUnit->GetPlayers().size() == InitWorld::INGAMEPLAYER_NUM || roomUnit->GetState() == RoomState::GAME )
 							continue;
 						roomNum = roomIndex;
 						currentRoom = roomUnit;
@@ -364,8 +364,9 @@ void NetworkManager::MainWorkProcess( )
 					{
 						roomNum = RoomManager::GetInstance().GetNewRoomNumber();
 						currentRoom = RoomManager::GetInstance().GetRoomUnitFromPools();
+						currentRoom->SetState( RoomState::MATCHING );
+						rooms[ roomNum ] = currentRoom;
 					}
-					rooms[ roomNum ] = currentRoom;
  					
 					if ( !currentRoom )
 						return;
@@ -382,9 +383,10 @@ void NetworkManager::MainWorkProcess( )
 						} );
 
 					// 현재 방에 3명 존재 시 게임 시작
-					if ( currentRoom->GetPlayers().size() == 3 )
+					if ( currentRoom->GetPlayers().size() == InitWorld::INGAMEPLAYER_NUM )
 					{
 						std::cout << "방에 3명 입장" << std::endl;
+						currentRoom->SetState( RoomState::GAME );
 						// 방에 있는 플레이어들에게 각각의 플레이어들 초기 정보 전송 (고유 색, 이름 등)
 						const std::vector<SOCKET> others = currentRoom->GetPlayers();
 						UserManager::GetInstance().PushTask(
