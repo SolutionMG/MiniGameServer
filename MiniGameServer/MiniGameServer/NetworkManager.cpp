@@ -99,8 +99,10 @@ bool NetworkManager::RunServer( )
 	{
 		workerThreads.emplace_back( [ & ]( ) { MainWorkProcess( ); } );
 	}
-	
+
+#if NDEBUG
 	DataBaseManager::GetInstance( );
+#endif
 	UserManager::GetInstance().Run();
 	RoomManager::GetInstance().Run();
 	RoomManager::GetInstance().RunTimer();

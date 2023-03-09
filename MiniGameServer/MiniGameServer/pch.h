@@ -19,10 +19,10 @@
 
 //User
 #include "Protocol.h"
-#include"Define.h"
+#include "Define.h"
 
 //DB
-#pragma comment(lib, "libmySQL.lib")
+#pragma comment(lib, "libmysql.lib")
 #pragma comment(lib, "mysqlcppconn.lib")
 
 #endif // !PCH_H

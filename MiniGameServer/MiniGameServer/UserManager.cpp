@@ -163,6 +163,9 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			if ( index == socket )
 				continue;
 
+			if ( m_users.find( index ) == m_users.end() )
+				continue;
+
 			//충돌 검사
 			const Position temp = m_users[ index ]->GetPosition();
 			//std::cout << player->GetColor() << "색상 플레이어와 " << m_users[ index ]->GetColor() << "색상 플레이어 충돌 검사" << std::endl;

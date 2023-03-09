@@ -30,11 +30,16 @@ DataBaseManager::~DataBaseManager( )
 bool DataBaseManager::DBConnect( )
 {
 	m_driver = get_driver_instance();
+	if ( !m_driver )
+	{
+		PRINT_LOG( "Database & Server Connect Failed : m_driver == nullptr" );
+		return false;
+	}
 	m_connect = m_driver->connect( "tcp://127.0.0.1:3306", "root", "487591" );
 
 	if ( !m_connect )
 	{
-		PRINT_LOG( "Database & Server Connect Failed" );
+		PRINT_LOG( "Database & Server Connect Failed : m_connect == nullptr" );
 		return false;
 	}
 
