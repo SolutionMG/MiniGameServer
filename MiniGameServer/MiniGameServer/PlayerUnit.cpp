@@ -13,6 +13,7 @@ void PlayerUnit::Initialize()
 	//플레이어 초기화
 	SetSocket( INVALID_SOCKET );
 	SetName( "default" );
+	SetScore( 1 );
 	SetState( EClientState::DISCONNECT );
 	SetPosition( Position( 0.f, 0.f ) );
 	SetRoomNumber( -1 );

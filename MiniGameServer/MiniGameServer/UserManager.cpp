@@ -249,7 +249,19 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			PRINT_LOG( "맵 외부의 좌표 수신" );
 			return;
 		}
-		const Tile& tile = room->GetTile( blockIndex );
+
+		Tile tile;
+		RoomManager::GetInstance().PushTask(
+			[&tile, blockIndex, roomNum ]()
+			{
+				const Tile temp = RoomManager::GetInstance().GetRooms()[ roomNum ]->GetTile(blockIndex);
+				tile.index = temp.index;
+				tile.color = temp.color;
+				tile.x = temp.x;
+				tile.y = temp.y;
+			} );
+
+	
 
 		if ( tile.color == player->GetColor() )
 			return;
@@ -276,6 +288,8 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 						if ( basePlayerScore == 0 )
 						{
 							PRINT_LOG( "점수 오차 발생" );
+							std::cout << "점수: " << m_users[ index ]->GetScore() << std::endl;
+							std::cout << index << " 플레이어" << std::endl;
 							break;
 						}
 
@@ -286,6 +300,20 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 				}
 			}
 			
+			//타일 색 충돌 플레이어 색으로 변경
+			RoomManager::GetInstance().PushTask(
+				[ blockIndex, roomNum, color ]()
+				{
+					RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
+					if ( !room )
+					{
+						PRINT_LOG( "존재하지 않는 방입니다." );
+						return;
+					}
+					room->SetTileColor( blockIndex, color );
+
+				} );
+
 			// 발판 충돌 플레이어 점수 상승
 			unsigned char newPlayerScore = player->GetScore() + 1;
 			player->SetScore( newPlayerScore );
@@ -311,20 +339,6 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 				//}
 
 			}
-
-			//타일 색 충돌 플레이어 색으로 변경
-			RoomManager::GetInstance().PushTask(
-				[ blockIndex, roomNum, color ]()
-				{
-					RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
-					if ( !room )
-					{
-						PRINT_LOG( "존재하지 않는 방입니다." );
-						return;
-					}
-					room->SetTileColor( blockIndex, color );
-
-				} );
 		}
 	}
 }

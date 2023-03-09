@@ -12,6 +12,7 @@ struct Tile
 public:
 	Tile(): index(-1), x(), y(), color() {}
 	Tile(float x, float y) :index(-1),x(x),y(y),color(0) {}
+	void operator=( Tile& other ){ index = other.index; x = other.x; y = other.y; color = other.color; }
 };
 
 // 인게임 상의 item들

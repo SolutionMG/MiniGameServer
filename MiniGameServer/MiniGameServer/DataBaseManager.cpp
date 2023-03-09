@@ -4,7 +4,7 @@
 
 
 DataBaseManager::DataBaseManager( )
-	: m_odbcName((SQLWCHAR*)L"MiniGame"), m_odbcId((SQLWCHAR*)L"root" ), m_odbcPw( ( SQLWCHAR* ) L"jin980827" )
+	:m_driver(nullptr), m_connect(nullptr), m_preparedStatement(nullptr), m_result(nullptr)
 {
 	if ( !DBConnect( ) )
 	{
@@ -14,44 +14,32 @@ DataBaseManager::DataBaseManager( )
 
 DataBaseManager::~DataBaseManager( )
 {
-	SQLFreeHandle( SQL_HANDLE_STMT, m_hStmt );
-	SQLDisconnect( m_hDbc );
-	SQLFreeHandle( SQL_HANDLE_DBC, m_hDbc );
-	SQLFreeHandle( SQL_HANDLE_ENV, m_hEnv );
+	if ( m_result )
+		delete m_result;
+
+	if ( m_preparedStatement )
+		delete m_preparedStatement;
+
+	if ( m_connect )
+		delete m_connect;
+
+	if ( !m_driver )
+		m_driver->threadEnd();
 }
 
 bool DataBaseManager::DBConnect( )
 {
-	if ( SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &m_hEnv ) != SQL_SUCCESS )
+	m_driver = get_driver_instance();
+	m_connect = m_driver->connect( "tcp://127.0.0.1:3306", "root", "487591" );
+
+	if ( !m_connect )
 	{
-		PRINT_LOG( "SQLAllocHandle Failed" );
+		PRINT_LOG( "Database & Server Connect Failed" );
 		return false;
 	}
 
-	if ( SQLSetEnvAttr( m_hEnv, SQL_ATTR_ODBC_VERSION, ( SQLPOINTER ) SQL_OV_ODBC3, SQL_IS_INTEGER ) != SQL_SUCCESS )
-	{
-		PRINT_LOG( "SQLSetEnvAttr Failed" );
-		return false;
-	}
-
-	// DB 연결
-	if ( SQLAllocHandle( SQL_HANDLE_DBC, m_hEnv, &m_hDbc ) != SQL_SUCCESS )
-	{
-		PRINT_LOG( "SQLAllocHandle Failed" );
-		return false;
-	}
-
-	if ( SQLConnect( m_hDbc, m_odbcName, SQL_NTS, m_odbcId, SQL_NTS, m_odbcPw, SQL_NTS ) != SQL_SUCCESS )
-	{
-		PRINT_LOG( "SQLConnect Failed" );
-		return false;
-	}
-
-	if ( SQLAllocHandle( SQL_HANDLE_STMT, m_hDbc, &m_hStmt ) != SQL_SUCCESS )
-	{
-		PRINT_LOG( "SQLAllocHandle Failed" );
-		return false;
-	}
+	// 데이터베이스와 연결
+	m_connect->setSchema( "MiniGame" );
 
 	std::cout << "Database Connect Success..." << std::endl;
 	return true;
@@ -68,7 +56,7 @@ bool DataBaseManager::LogOn( const std::string& name, const std::string& passwor
 {
 	// 저장 프로시저 호출
 
-	SQLWCHAR* proc_name = ( SQLWCHAR* ) L"{CALL sp_VerificateId(?, ?)}";
+	/*SQLWCHAR* proc_name = ( SQLWCHAR* ) L"{CALL sp_VerificateId(?, ?)}";
 	SQLRETURN returnValue = SQLPrepare( m_hStmt, proc_name, SQL_NTS );
 
 	if ( returnValue == SQL_SUCCESS || returnValue == SQL_SUCCESS_WITH_INFO )
@@ -86,6 +74,6 @@ bool DataBaseManager::LogOn( const std::string& name, const std::string& passwor
 			if ( returnValue == SQL_SUCCESS || returnValue == SQL_SUCCESS_WITH_INFO )
 				return true;
 		}
-	}
+	}*/
 	return false;
 }

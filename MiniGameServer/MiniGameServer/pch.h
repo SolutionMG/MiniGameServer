@@ -25,6 +25,5 @@
 #pragma comment(lib, "libmySQL.lib")
 #pragma comment(lib, "mysqlcppconn.lib")
 
-
 #endif // !PCH_H
 

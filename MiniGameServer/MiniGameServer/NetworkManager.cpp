@@ -100,7 +100,7 @@ bool NetworkManager::RunServer( )
 		workerThreads.emplace_back( [ & ]( ) { MainWorkProcess( ); } );
 	}
 	
-	// DataBaseManager::GetInstance( );
+	DataBaseManager::GetInstance( );
 	UserManager::GetInstance().Run();
 	RoomManager::GetInstance().Run();
 	RoomManager::GetInstance().RunTimer();
