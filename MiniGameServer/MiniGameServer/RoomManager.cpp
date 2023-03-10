@@ -82,7 +82,7 @@ void RoomManager::UpdateRoomTimer()
 			if ( user->GetStronger() )
 			{
 				UserManager::GetInstance().PushTask(
-					[ player, time ]()
+					[ player, time, roomNum ]()
 					{
 						PlayerUnit* user = UserManager::GetInstance().GetUser( player );
 						if ( !user )
@@ -96,7 +96,15 @@ void RoomManager::UpdateRoomTimer()
 						user->SetStronger( false );
 						user->SetSkillDuration( 0 );
 						Packet::SkillEnd skillend( user->GetId() );
-						user->SendPacket( skillend );
+
+						RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
+						if ( !room )
+						{
+							PRINT_LOG( "room == nullptr" );
+						}
+						auto& players = room->GetPlayers();
+						for ( const auto& player : players )
+							UserManager::GetInstance().GetUsers()[ player ]->SendPacket( skillend );
 					} );
 			}
 

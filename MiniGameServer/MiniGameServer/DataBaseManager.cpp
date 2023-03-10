@@ -72,22 +72,18 @@ void DataBaseManager::AnsiToUTF8( const std::string& target, std::string& result
 	int len = MultiByteToWideChar( CP_UTF8, 0, target.c_str(), -1, NULL, 0 );
 	wchar_t* buffer = new wchar_t[ len ];
 	MultiByteToWideChar( CP_UTF8, 0, target.c_str(), -1, buffer, len );
-
-	std::wcout << buffer << L"¹Ù²¸¶ù" << std::endl;
-
 	std::wstring wide_str( buffer );
 	delete[] buffer;
 
-	len = WideCharToMultiByte( CP_UTF8, 0, wide_str.c_str(), wide_str.length() - 1, NULL, 0, NULL, NULL );
-	char* buffer2 = new char[ len ];
-	WideCharToMultiByte( CP_UTF8, 0, wide_str.c_str(), wide_str.length() - 1, buffer2 , len, NULL, NULL );
-	result = buffer2;
-	std::wcout << result.c_str() << L"¹Ù²»´Ï!"<< std::endl;
+	len = WideCharToMultiByte( CP_UTF8, 0, wide_str.c_str(), wide_str.length(), NULL, 0, NULL, NULL );
+	result.resize( len, 0 );
+	WideCharToMultiByte( CP_UTF8, 0, wide_str.c_str(), wide_str.length(), &result[ 0 ], len, NULL, NULL );
 }
 
 #if NDEBUG
 bool DataBaseManager::DBConnect( )
 {
+	setlocale( LC_ALL, "" );
 	m_driver = get_driver_instance();
 	if ( !m_driver )
 	{
@@ -154,14 +150,15 @@ bool DataBaseManager::SignUp( const std::string& name, const std::string& passwo
 	//std::string encodePassword = EncodingUTF8MB4( password );
 	//std::cout << encodePassword << std::endl;
 
-	std::string encodeName;
-	std::string encodePassword;
-	AnsiToUTF8( name, encodeName );
-	AnsiToUTF8( password, encodePassword );
+	std::u8string encodeName{ name.begin(), name.end() };
+	std::u8string encodePassword{ password.begin(), password.end() };
+
+	std::string reEncodingName{ encodeName.begin(), encodeName.end() };
+	std::string reEncodingPassword{ encodePassword.begin(), encodePassword.end() };
 
 	try{
 		m_preparedStatement = m_connect->prepareStatement( "SELECT _name FROM t_Player WHERE _name = ?" );
-		m_preparedStatement->setString( 1, encodeName );
+		m_preparedStatement->setString( 1, reEncodingName );
 		m_result = m_preparedStatement->executeQuery();
 	}
 	catch ( sql::SQLException& e )
@@ -183,9 +180,9 @@ bool DataBaseManager::SignUp( const std::string& name, const std::string& passwo
 	// ¾ÆÀÌµð »ý¼º
 	try{
 		m_preparedStatement = m_connect->prepareStatement( "INSERT INTO t_Player (_name, _password)  VALUES (?, ?)" );
-		m_preparedStatement->setString( 1, encodeName );
-		m_preparedStatement->setString( 2, encodePassword );
-		m_preparedStatement->executeUpdate();
+		m_preparedStatement->setString( 1, name );
+		m_preparedStatement->setString( 2, password );
+		m_preparedStatement->execute();
 	}
 	catch ( sql::SQLException& e )
 	{
@@ -226,14 +223,21 @@ bool DataBaseManager::LogOn( const std::string& name, const std::string& passwor
 
 	//std::string encodeName = EncodingUTF8MB4( name );
 	//std::string encodePassword = EncodingUTF8MB4( password );
-	std::string encodeName;
-	std::string encodePassword;
-	AnsiToUTF8( name, encodeName );
-	AnsiToUTF8( password, encodePassword );
+	// 
+	//std::string encodeName;
+	//std::string encodePassword;
+	//AnsiToUTF8( name, encodeName );
+	//AnsiToUTF8( password, encodePassword );
+
+	std::u8string encodeName{ name.begin(), name.end() };
+	std::u8string encodePassword{ password.begin(), password.end() };
+
+	std::string reEncodingName{ encodeName.begin(), encodeName.end() };
+	std::string reEncodingPassword{ encodePassword.begin(), encodePassword.end() };
 	try{
 		m_preparedStatement = m_connect->prepareStatement( "SELECT _name, _bestScore FROM t_player WHERE _name = ? AND _password = ?" );
-		m_preparedStatement->setString( 1, encodeName );
-		m_preparedStatement->setString( 2, encodePassword );
+		m_preparedStatement->setString( 1, name );
+		m_preparedStatement->setString( 2, password );
 		m_result = m_preparedStatement->executeQuery();
 	}
 	catch ( sql::SQLException& e )
