@@ -25,6 +25,8 @@ public:
 	virtual ~DataBaseManager( );
 
 public:
+	std::string UnicodeToUtf8( const wchar_t* wstr );
+
 #if NDEBUG
 	bool DBConnect();
 	bool SignUp( const std::string& name, const std::string& password );

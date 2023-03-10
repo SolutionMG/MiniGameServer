@@ -81,31 +81,6 @@ void RoomManager::UpdateRoomTimer()
 			user->SendPacket( packet );
 		}
 
-		if ( time > 0 && ( time % InitWorld::ITEMSPAWNTIME == 0 ) )
-		{
-			// 해당 방에 아이템 추가 및 클라이언트에게 아이템 위치 및 타입 전송
-			int randomPositionIndex = MathManager::GetInstance().randomInteger( 0, 48 );
-			int itemType = MathManager::GetInstance().randomInteger( 0, ItemTypes::ITEMTYPES_SIZE );
-			const Tile tile = room->GetTile( randomPositionIndex );
-			int itemIndex = static_cast< int >( room->GetItems().size() );
-
-		
-			Packet::ItemSpawn itemSpawn( tile.x, tile.y, static_cast< unsigned char >( itemType ), itemIndex );
-			// room객체에 아이템 정보 push
-			Item newItem( tile.x, tile.y, static_cast< unsigned char >( itemType ), itemIndex );
-			room->PushItem( newItem );
-
-			for ( auto& player : players )
-			{
-				PlayerUnit* user = UserManager::GetInstance().GetUser( player );
-				if ( !user )
-					continue;
-				// 봉인
-				//user->SendPacket( itemSpawn );
-			}
-			std::cout << roomNum << "방 " << itemType << "번 아이템 스폰" << std::endl;
-		}
-
 		if ( time == InitWorld::ENDGAMETIME )
 		{
 			// 게임 종료

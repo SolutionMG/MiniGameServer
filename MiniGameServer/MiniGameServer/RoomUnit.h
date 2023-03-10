@@ -15,18 +15,6 @@ public:
 	void operator=( Tile& other ){ index = other.index; x = other.x; y = other.y; color = other.color; }
 };
 
-// 인게임 상의 item들
-struct Item
-{
-	int index;
-	float x;
-	float y;
-	unsigned char itemType;
-public:
-	Item() : index(), x(), y(), itemType() {}
-	Item( float x, float y, unsigned char itemType, int index ) : x( x ), y( y ), itemType( itemType ), index(index) {}
-};
-
 enum class RoomState : char
 {
 	MATCHING, GAME, END
@@ -42,9 +30,6 @@ private:
 	
 	//방의 발판 블록들
 	std::vector<Tile> m_blocks;
-
-	//맵상에 배치된 아이템들
-	std::vector<Item> m_items;
 
 	RoomState m_roomState;
 public:
@@ -62,18 +47,11 @@ public:
 	void SetTileColor( const int& index, const short& color ) { m_blocks[index].color = color; }
 	void SetState( const RoomState& state ) { m_roomState = state; }
 
-	// 아이템 관리 객체에 해당 방에 젠 되어있는 아이템 정보 넣기
-	void PushItem( const Item& item ) { m_items.emplace_back( item ); }
-
 	//get
 	const std::vector<SOCKET>& GetPlayers( ) {return m_players;}
 	const unsigned char& GetTime(){ return m_time; }
 	const Tile& GetTile( const int& index ){ return m_blocks[ index ]; }
-	const std::vector<Item>& GetItems() { return m_items; }
 	const RoomState& GetState() { return m_roomState; }
-
-	// 플레이어와 충돌한 아이템 삭제
-	void PopItem( const int& index ) { std::erase_if( m_items, [ &index ]( const Item& dest ) {return index == dest.index; } ); }
 
 };
 

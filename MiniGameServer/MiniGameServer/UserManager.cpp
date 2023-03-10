@@ -204,53 +204,6 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			}
 		}
 	}
-
-	// 아이템과 플레이어 충돌
-	{
-		auto& items = room->GetItems();
-		std::vector<Packet::ItemUse> collisionItems;
-		collisionItems.reserve( static_cast< int >( ( InitWorld::ENDGAMETIME / InitWorld::ITEMSPAWNTIME ) ) );
-
-		for ( auto& item : items )
-		{
-			if ( MathManager::GetInstance().CollisionSphere(currentPos.x, currentPos.y, item.x, item.y, (InitWorld::ITEM_SIZE / 2.f) + (InitWorld::PLAYERCOLLIDER / 2.f) ) )
-			{
-				// 플레이어와 아이템 충돌
-				// 해당 정보 플레이어들에게 전송 ( 어떤 아이템과 어떤 플레이어가 충돌했는 가)
-				Packet::ItemUse usingItem(player->GetId(), item.itemType, item.index);
-				collisionItems.emplace_back( usingItem );
-			}
-		}
-
-		if ( !collisionItems.empty() )
-		{
-			//충돌한 아이템 정보 send
-			for ( auto& index : players )
-			{
-				for ( auto& usingItem : collisionItems )
-				{
-					//봉인
-					//m_users[ index ]->SendPacket( usingItem );
-				}
-			}
-
-			// 사용된 아이템 방에서 삭제
-			RoomManager::GetInstance().PushTask(
-				[ collisionItems, roomNum ]()
-				{
-					RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
-					
-					if ( !room )
-						return;
-					// 충돌된 아이템 
-					for ( auto& item : collisionItems )
-					{
-						room->PopItem( item.itemIndex );
-					}
-					std::cout << "사용된 아이템 삭제" << std::endl;
-				} );
-		}
-	}
 	
 	// 발판 충돌
 	{

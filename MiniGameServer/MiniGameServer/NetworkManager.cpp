@@ -101,7 +101,7 @@ bool NetworkManager::RunServer( )
 	}
 
 #if NDEBUG
-	//DataBaseManager::GetInstance().DBConnect();
+	DataBaseManager::GetInstance().DBConnect();
 	//DataBaseManager::GetInstance().SignUp( "ÁöÀº", "1234" );
 #endif
 	UserManager::GetInstance().Run();

@@ -6,7 +6,6 @@ RoomUnit::RoomUnit()
 {
 	m_players.reserve( InitWorld::INGAMEPLAYER_NUM );
 	m_blocks.reserve( InitWorld::TILE_COUNTX * InitWorld::TILE_COUNTY );
-	m_items.reserve( InitWorld::ENDGAMETIME / InitWorld::ITEMSPAWNTIME );
 
 	for ( int i = 0; i < InitWorld::TILE_COUNTY; ++i )
 	{
@@ -26,7 +25,6 @@ void RoomUnit::Initialize()
 	{
 		block.color = 0;
 	}
-	m_items.clear();
 	m_roomState = RoomState::END;
 	m_players.clear();
 	m_time =  0 ;
