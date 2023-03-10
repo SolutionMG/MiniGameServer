@@ -15,6 +15,10 @@ namespace InitPlayer
 	constexpr float INITPOSITION_Y[ 3 ] = { 1486.f, 2206.f, 2206.f };
 	constexpr float INITDIRECTION_X[ 3 ] = { 0.f, -0.866f, 0.866f };
 	constexpr float INITDIRECTION_Y[ 3 ] = { -1.f, 0.5f, 0.5f };
+
+	constexpr unsigned char SKILLENABLE = 100;  /*스킬 사용에 필요한 mp*/
+	constexpr unsigned char MPCOUNT = 1;		/*한번 블록 충돌 시 상승할 mp*/
+	constexpr unsigned char SKILLDURATION = 3;  /*스킬 지속시간*/
 }
 
 namespace InitWorld
@@ -61,6 +65,7 @@ namespace ClientToServer
 {
 	constexpr unsigned char LOGIN_REQUEST = 0;
 	constexpr unsigned char MOVE = 1;
+	constexpr unsigned char SKILLUSE_REQUEST = 2;
 }
 // SERVER
 namespace ServerToClient
@@ -76,7 +81,10 @@ namespace ServerToClient
 	constexpr unsigned char PLAYERSCORE = 8;
 	constexpr unsigned char COLLISION_WALL = 9;
 	constexpr unsigned char ENDGAME = 10;
-
+	constexpr unsigned char SKILLUSE_REQUEST_SUCCESS = 11;
+	constexpr unsigned char SKILLUSE_REQUEST_FAILED = 12;
+	constexpr unsigned char MP_UPDATE = 13;
+	constexpr unsigned char SKILLEND = 14;
 }
 
-#endif // !INITDEFINE_H
+#endif // !INITDEFINE

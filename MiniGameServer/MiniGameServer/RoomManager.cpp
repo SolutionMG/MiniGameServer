@@ -4,6 +4,7 @@
 #include "UserManager.h"
 #include "PlayerUnit.h"
 #include "MathManager.h"
+#include "Log.h"
 
 RoomManager::RoomManager()
 	:m_updateRoomTimers(), m_timerThread()
@@ -78,6 +79,27 @@ void RoomManager::UpdateRoomTimer()
 			if ( !user )
 				continue;
 
+			if ( user->GetStronger() )
+			{
+				UserManager::GetInstance().PushTask(
+					[ player, time ]()
+					{
+						PlayerUnit* user = UserManager::GetInstance().GetUser( player );
+						if ( !user )
+							return;
+						if ( user->GetSkillDuration() != InitPlayer::SKILLDURATION )
+						{
+							user->SetSkillDuration( time );
+							return;
+						}
+						PRINT_LOG( "스킬 사용 종료" );
+						user->SetStronger( false );
+						user->SetSkillDuration( 0 );
+						Packet::SkillEnd skillend( user->GetId() );
+						user->SendPacket( skillend );
+					} );
+			}
+
 			user->SendPacket( packet );
 		}
 
@@ -112,7 +134,7 @@ void RoomManager::UpdateRoomTimer()
 				//봉인
 				//user->SendPacket( finalinfo );
 			}
-			std::cout << "게임 종료 시간 도달" << std::endl;
+			PRINT_LOG( "게임 종료 시간 도달" );
 		}
 	}
 

@@ -71,6 +71,7 @@ void UserManager::AddProcess( )
 	m_processFunctions.reserve( 10 );
 	m_processFunctions.emplace( std::make_pair( ClientToServer::LOGIN_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessLoginRequest( socket, packet ); } ) ));
 	m_processFunctions.emplace( std::make_pair( ClientToServer::MOVE, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessMove( socket, packet ); } ) ) );
+	m_processFunctions.emplace( std::make_pair( ClientToServer::SKILLUSE_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessSkill( socket, packet ); } ) ) );
 }
 
 void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
@@ -122,7 +123,6 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		PRINT_LOG( "이상한 좌표를 수신" );
 		return;
 	}
-
 
 	player->SetPosition( currentPos );
 	const short color = player->GetColor();
@@ -217,23 +217,11 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			return;
 		}
 
-		Tile tile;
-		RoomManager::GetInstance().PushTask(
-			[&tile, blockIndex, roomNum ]()
-			{
-				const Tile temp = RoomManager::GetInstance().GetRooms()[ roomNum ]->GetTile(blockIndex);
-				tile.index = temp.index;
-				tile.color = temp.color;
-				tile.x = temp.x;
-				tile.y = temp.y;
-			} );
-
-	
+		Tile tile = room->GetTile( blockIndex );
 
 		if ( tile.color == player->GetColor() )
 			return;
 		
-
 		if ( MathManager::GetInstance().CollisionPointAndRectangle( currentPos.x, currentPos.y, tile.x, tile.y) )
 		{
 			//std::cout << player->GetId() << "의 충돌 정보 전송" << blockIndex << std::endl;
@@ -288,6 +276,20 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			Packet::Score upScore( player->GetId(), newPlayerScore );
 			Packet::Score downScore( basePlayer, basePlayerScore );
 
+			// mp정보 갱신
+			unsigned char mp = player->GetMp();
+			if ( mp != 100 )
+			{
+				std::cout << static_cast<int>(mp) << " mp 갱신 중" << std::endl;
+				mp = min( mp + InitPlayer::MPCOUNT, InitPlayer::SKILLENABLE );
+				player->SetMp( mp );
+
+				Packet::PlayerMp_Update mpPacket( player->GetId(), mp );
+				player->SendPacket( mpPacket );
+				std::cout << player->GetSocket() << std::endl;
+				PRINT_LOG( "mp update 패킷 수신" );
+			}
+
 			// 같은 방에 있는 플레이어들에게 정보 전송
 			for ( const auto& index : players )
 			{
@@ -308,6 +310,55 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			}
 		}
 	}
+}
+
+void UserManager::ProcessSkill( const SOCKET& socket, char* packet )
+{
+	Packet::SkillUse_Request send = *reinterpret_cast< Packet::SkillUse_Request* > ( packet );
+
+	if ( m_users.find( socket ) == m_users.end() )
+	{
+		PRINT_LOG( "존재하지 않는 유저 입니다." );
+		return;
+	}
+
+	PlayerUnit* player = m_users[ socket ];
+
+	if ( !player )
+	{
+		PRINT_LOG( "존재하지 않는 유저 입니다." );
+		return;
+	}
+	Packet::SkillUse_Result result(player->GetId(), ServerToClient::SKILLUSE_REQUEST_FAILED);
+
+	PRINT_LOG( "스킬 사용 요청 패킷 송신" );
+	if ( player->GetMp() == InitPlayer::SKILLENABLE )
+	{
+		RoomUnit* room = RoomManager::GetInstance().GetRoom(player->GetRoomNum());
+		if ( !room )
+		{
+			PRINT_LOG( "존재하지 않는 방 입니다." );
+			return;
+		}
+		
+		result.info.type = ServerToClient::SKILLUSE_REQUEST_SUCCESS;
+
+		player->SetMp(0);
+		player->SetStronger( true );
+
+		for (const auto& player : room->GetPlayers() )
+		{
+			m_users[ player ]->SendPacket( result );
+		}
+
+		PRINT_LOG( "스킬 사용 승인 패킷 전송" );
+
+		return;
+	}
+	
+	//사용 불가 패킷
+	player->SendPacket( result );
+	PRINT_LOG( "스킬 사용 불허 패킷 전송" );
 }
 
 void UserManager::DeleteUser( const SOCKET& socket )

@@ -119,10 +119,11 @@ namespace Packet
 	struct CollisionPlayer
 	{
 		PacketInfo info;
-		int owners[3];
+		int owners[ 3 ];
+		int strongers[ 3 ];	/*스킬 사용 유저 여부*/
 
 		CollisionPlayer()
-			:info( sizeof( CollisionPlayer ), ServerToClient::COLLISION_PLAYER ), owners{-1,-1,-1}  {	}
+			:info( sizeof( CollisionPlayer ), ServerToClient::COLLISION_PLAYER ), owners{ -1,-1,-1 }, strongers{ -1,-1,-1 }  {}
 	};
 
 	// 플레이어와 벽과 충돌
@@ -171,6 +172,39 @@ namespace Packet
 		PacketInfo info;
 		FinishPlayerInfo playerInfo[ 3 ];
 		EndGame() : info( sizeof( EndGame ), ServerToClient::ENDGAME ), playerInfo() {};
+	};
+
+	//클라 스킬 사용 요청 용 패킷
+	struct SkillUse_Request
+	{
+		PacketInfo info;
+		SkillUse_Request( ) : info( sizeof( SkillUse_Request ), ClientToServer::SKILLUSE_REQUEST ) {}
+	};
+
+	//스킬 사용 요청 결과 전송용 패킷
+	struct SkillUse_Result
+	{
+		PacketInfo info;
+		int owner; 
+		SkillUse_Result(const int owner, const unsigned char type ) : info( sizeof( SkillUse_Result ), type ), owner(owner) {}
+	};
+
+	// 스킬 mp 갱신용 패킷
+	struct PlayerMp_Update
+	{
+		PacketInfo info;
+		int owner;
+		unsigned char mp;
+		PlayerMp_Update( const int owner, unsigned char mp ):info(sizeof(PlayerMp_Update), ServerToClient::MP_UPDATE ), owner(owner), mp(mp){}
+
+	};
+
+	// 스킬 사용 종료 패킷
+	struct SkillEnd
+	{
+		PacketInfo info;
+		int owner;
+		SkillEnd(const int owner ): info(sizeof( SkillEnd ), ServerToClient::SKILLEND), owner(owner){}
 	};
 }
 #pragma pack(pop)
