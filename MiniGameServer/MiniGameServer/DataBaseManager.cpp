@@ -99,8 +99,8 @@ bool DataBaseManager::DBConnect( )
 		connection_options[ "schema" ] = "MiniGame";
 		connection_options[ "characterSetResults" ] = "utf8mb4";
 		connection_options[ "clientCharacterSet" ] = "utf8mb4";
-		connection_options[ "OPT_CHARSET_NAME" ] = "utf8mb4";
-		connection_options[ "OPT_SET_CHARSET_NAME" ] = "utf8mb4";
+		connection_options[ "CHARSET_NAME" ] = "utf8mb4";
+		connection_options[ "SET_CHARSET_NAME" ] = "utf8mb4";
 
 		m_connect = m_driver->connect( connection_options );
 	}
@@ -156,6 +156,7 @@ bool DataBaseManager::SignUp( const std::string& name, const std::string& passwo
 	std::string reEncodingName{ encodeName.begin(), encodeName.end() };
 	std::string reEncodingPassword{ encodePassword.begin(), encodePassword.end() };
 
+
 	try{
 		m_preparedStatement = m_connect->prepareStatement( "SELECT _name FROM t_Player WHERE _name = ?" );
 		m_preparedStatement->setString( 1, reEncodingName );
@@ -180,8 +181,8 @@ bool DataBaseManager::SignUp( const std::string& name, const std::string& passwo
 	// 아이디 생성
 	try{
 		m_preparedStatement = m_connect->prepareStatement( "INSERT INTO t_Player (_name, _password)  VALUES (?, ?)" );
-		m_preparedStatement->setString( 1, name );
-		m_preparedStatement->setString( 2, password );
+		m_preparedStatement->setString( 1, reEncodingName );
+		m_preparedStatement->setString( 2, reEncodingPassword );
 		m_preparedStatement->execute();
 	}
 	catch ( sql::SQLException& e )
