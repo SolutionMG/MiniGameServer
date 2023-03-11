@@ -25,9 +25,8 @@ public:
 	virtual ~DataBaseManager( );
 
 public:
-	std::vector<unsigned char> UnicodeToUtf8( const std::string& str );
-	std::string EncodingUTF8MB4( const std::string& str );
-	void AnsiToUTF8( const std::string& target, std::string& result );
+	std::string EncodingString( const std::string& str );
+	std::string DecodingString( const std::string& str );
 
 #if NDEBUG
 	bool DBConnect();

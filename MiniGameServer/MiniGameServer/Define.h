@@ -13,6 +13,8 @@ namespace InitServer
 	constexpr int MAX_ROOMSIZE = 100;
 
 	constexpr float MAX_DISTANCE = 1000.f;
+
+	constexpr unsigned int MAX_CONVERT = 256;
 }
 
 //Operation Type
