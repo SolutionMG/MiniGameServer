@@ -43,7 +43,7 @@ namespace InitWorld
 	constexpr int FIRSTTILE_COLOR[ 3 ] = { 17,30,32 };
 
 	// 게임 종료 시간
-	constexpr unsigned char ENDGAMETIME = 60;
+	constexpr unsigned char ENDGAMETIME = 66; /* 실제 게임 시간 = 60초, 게임 시작 후 정지 시간 6초*/
 
 	// 벽 정보
 	constexpr float MINIMUM_X = FIRST_TILEPOSITION_X - 25.f;
@@ -71,23 +71,23 @@ namespace ClientToServer
 // SERVER
 namespace ServerToClient
 {
-	constexpr unsigned char FIRSTINFO = 0;
-	constexpr unsigned char LOGON_OK = 1;
-	constexpr unsigned char LOGON_FAILED = 2;
-	constexpr unsigned char INITPLAYERS = 3;
-	constexpr unsigned char MOVE = 4;
-	constexpr unsigned char TIME = 5;
-	constexpr unsigned char COLLISION_BLOCK = 6;
-	constexpr unsigned char COLLISION_PLAYER = 7;
-	constexpr unsigned char PLAYERSCORE = 8;
-	constexpr unsigned char COLLISION_WALL = 9;
-	constexpr unsigned char ENDGAME = 10;
-	constexpr unsigned char SKILLUSE_REQUEST_SUCCESS = 11;
-	constexpr unsigned char SKILLUSE_REQUEST_FAILED = 12;
-	constexpr unsigned char MP_UPDATE = 13;
-	constexpr unsigned char SKILLEND = 14;
-	constexpr unsigned char SIGNUP_OK = 15;
-	constexpr unsigned char SIGNUP_FAILED = 15;
+	constexpr unsigned char FIRSTINFO					= 0;
+	constexpr unsigned char LOGON_OK					= 1;
+	constexpr unsigned char LOGON_FAILED				= 2;
+	constexpr unsigned char INITPLAYERS					= 3;
+	constexpr unsigned char MOVE						= 4;
+	constexpr unsigned char TIME						= 5;
+	constexpr unsigned char COLLISION_BLOCK				= 6;
+	constexpr unsigned char COLLISION_PLAYER			= 7;
+	constexpr unsigned char PLAYERSCORE					= 8;
+	constexpr unsigned char COLLISION_WALL				= 9;
+	constexpr unsigned char ENDGAME						= 10;
+	constexpr unsigned char SKILLUSE_REQUEST_SUCCESS	= 11;
+	constexpr unsigned char SKILLUSE_REQUEST_FAILED		= 12;
+	constexpr unsigned char MP_UPDATE					= 13;
+	constexpr unsigned char SKILLEND					= 14;
+	constexpr unsigned char SIGNUP_OK					= 15;
+	constexpr unsigned char SIGNUP_FAILED				= 16;
 
 }
 

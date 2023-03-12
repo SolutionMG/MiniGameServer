@@ -59,7 +59,7 @@ namespace Packet
 
 		// 승률도 추가될 수 잇음
 		LoginResult( const int owner, const int type/*Login Failed, Login Ok*/)
-			: info( sizeof( LoginResult ), type ), owner( owner ), bestScore(0) {}
+			: info( sizeof( LoginResult ), type ), owner( owner ), bestScore(-1) {}
 	};
 
 	// 회원가입 요청
@@ -88,18 +88,19 @@ namespace Packet
 	struct InitPlayers
 	{
 		PacketInfo info;
-		int owner;			/* 플레이어 구분, 로그인 구현 시 추후 닉네임으로 변경*/
-		short color;		/* 플레이어 고유 색상 0 - red, 1 - blue, 2 - yellow*/
-		float x;			/*x 좌표*/
-		float y;			/*y 좌표*/
-		float directionX;	/*X방향 각도*/
-		float directionY;	/*Y방향 각도*/
+		int owner;							/* 플레이어 구분 */
+		char name[ InitPlayer::MAX_NAME ];	/* 플레이어 이름 */
+		short color;						/* 플레이어 고유 색상 0 - red, 1 - blue, 2 - yellow*/
+		float x;							/*	x 좌표*/
+		float y;							/*	y 좌표*/
+		float directionX;					/*	X방향 각도*/
+		float directionY;					/*	Y방향 각도*/
 
 		// 초기 위치 추가될 예정
 
 		InitPlayers( const int owner )
 			: info( sizeof( InitPlayers ), ServerToClient::INITPLAYERS )
-			, owner( owner ), color(), x(), y(), directionX(), directionY() {}
+			, owner( owner ), color(), x(), y(), directionX(), directionY(), name() {}
 	};
 	
 	// 클라이언트가 이동 패킷 서버에게 전송

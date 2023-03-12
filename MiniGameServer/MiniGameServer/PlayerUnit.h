@@ -41,6 +41,7 @@ public:
 	const bool& GetStronger() { return m_stronger; }
 	const unsigned char& GetSkillDuration() { return m_skillDuration; }
 	const int& GetBestScore( const int score ) { m_bestScore = score; }
+	const std::string& GetName() { return m_name; }
 
 	// Set
 	void SetName(const std::string& name ) { m_name = name; }
