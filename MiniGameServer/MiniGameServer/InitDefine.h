@@ -16,7 +16,7 @@ namespace InitPlayer
 	constexpr float INITDIRECTION_X[ 3 ] = { 0.f, -0.866f, 0.866f };
 	constexpr float INITDIRECTION_Y[ 3 ] = { -1.f, 0.5f, 0.5f };
 
-	constexpr unsigned char SKILLENABLE = 100;  /*스킬 사용에 필요한 mp*/
+	constexpr unsigned char SKILLENABLE = 10;  /*스킬 사용에 필요한 mp*/
 	constexpr unsigned char MPCOUNT = 1;		/*한번 블록 충돌 시 상승할 mp*/
 	constexpr unsigned char SKILLDURATION = 3;  /*스킬 지속시간*/
 }

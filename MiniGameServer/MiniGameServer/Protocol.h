@@ -54,14 +54,15 @@ namespace Packet
 	struct LoginResult
 	{
 		PacketInfo info;
-		char name[ InitPlayer::MAX_NAME ];
 		int owner;
 
 		// 승률도 추가될 수 잇음
 		LoginResult( const int owner, const int type/*Login Failed, Login Ok*/)
 			: info( sizeof( LoginResult ), type )
-			, owner( owner ), name() {}
+			, owner( owner ) {}
 	};
+
+	//struct Sign
 
 	// 서버에서 미니게임 씬 전환 요청 및 초기화 정보 전송
 	// 클라이언트에서 해당 패킷을 받고 플레이어들의 초기 위치, 고유 색상을 Set

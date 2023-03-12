@@ -66,6 +66,12 @@ void RoomManager::UpdateRoomTimer()
 			continue;
 
 		RoomUnit* room = m_rooms[ roomNum ];
+		if ( !room )
+		{
+			PRINT_LOG( "room == nullptr" );
+			continue;
+		}
+
 		unsigned char time = room->GetTime();
 		room->SetTime( ++time );
 
@@ -73,28 +79,31 @@ void RoomManager::UpdateRoomTimer()
 		auto& players = room->GetPlayers();
 		Packet::Timer packet( time );
 
-		for ( auto& player : players )
+		for ( auto& index : players )
 		{
-			PlayerUnit* user = UserManager::GetInstance().GetUser( player );
+			PlayerUnit* user = UserManager::GetInstance().GetUser( index );
 			if ( !user )
 				continue;
 
 			if ( user->GetStronger() )
 			{
 				UserManager::GetInstance().PushTask(
-					[ player, time, roomNum ]()
+					[ index, time, roomNum ]()
 					{
-						PlayerUnit* user = UserManager::GetInstance().GetUser( player );
+						PlayerUnit* user = UserManager::GetInstance().GetUser( index );
 						if ( !user )
 							return;
+
 						if ( user->GetSkillDuration() != InitPlayer::SKILLDURATION )
 						{
-							user->SetSkillDuration( time );
+							user->SetSkillDuration( user->GetSkillDuration() + 1 );
 							return;
 						}
-						PRINT_LOG( "스킬 사용 종료" );
+						// 스킬 사용 후 충돌이 일어나지 않아서 스킬 지속시간이 다됐을 경우
+						//PRINT_LOG( "스킬 사용 종료" );
 						user->SetStronger( false );
 						user->SetSkillDuration( 0 );
+
 						Packet::SkillEnd skillend( user->GetId() );
 
 						RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
@@ -103,8 +112,11 @@ void RoomManager::UpdateRoomTimer()
 							PRINT_LOG( "room == nullptr" );
 						}
 						auto& players = room->GetPlayers();
-						for ( const auto& player : players )
-							UserManager::GetInstance().GetUsers()[ player ]->SendPacket( skillend );
+
+						for ( const auto& p : players )
+						{
+							UserManager::GetInstance().GetUsers()[ p ]->SendPacket( skillend );
+						}
 					} );
 			}
 
@@ -115,33 +127,28 @@ void RoomManager::UpdateRoomTimer()
 		{
 			// 게임 종료
 			// 타이머에서 해당 방 삭제, 게임 종료 패킷 각 플레이어들에게 전송
-			room->SetTime( 0 );
-			m_deleteRoomTimers.emplace_back( roomNum );
+			// room->SetTime( 0 );
+			// m_deleteRoomTimers.emplace_back( roomNum );
 
 			Packet::EndGame finalinfo;
-			int index = 0;
+			int count = 0;
 
-			for ( auto& player : players )
+			for ( auto& index : players )
 			{
-				PlayerUnit* user = UserManager::GetInstance().GetUser( player );
+				PlayerUnit* user = UserManager::GetInstance().GetUser( index );
 				if ( !user )
 					continue;
 
 				//게임 종료 패킷 전송
-				finalinfo.playerInfo[ index ].owner = user->GetId();
-				finalinfo.playerInfo[ index++ ].score = user->GetScore();
-			}
-
-			for ( auto& player : players )
-			{
-				PlayerUnit* user = UserManager::GetInstance().GetUser( player );
-				if ( !user )
-					continue;
+				finalinfo.playerInfo[ count ].owner = user->GetId();
+				finalinfo.playerInfo[ count++ ].score = user->GetScore();
 
 				//게임 종료 패킷 전송
 				//봉인
+				//task로 send?
 				//user->SendPacket( finalinfo );
 			}
+
 			PRINT_LOG( "게임 종료 시간 도달" );
 		}
 	}

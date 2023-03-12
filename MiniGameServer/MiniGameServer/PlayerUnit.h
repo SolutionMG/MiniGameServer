@@ -48,7 +48,7 @@ public:
 	void SetScore( const unsigned char& score ) { m_score = score; }
 	void SetMp( const unsigned char& mp ) { m_mp = mp; }
 	void SetStronger( const bool& stronger ) { m_stronger = stronger; }
-	void SetSkillDuration( const unsigned char& duration ) { m_stronger = duration; }
+	void SetSkillDuration( const unsigned char& duration ) { m_skillDuration = duration; }
 };
 
 #endif // !PLAYERUNIT_H

@@ -54,6 +54,7 @@ public:
 
 	// 패킷 타입에따른 처리 함수들
 	void ProcessLoginRequest( const SOCKET& socket, char* packet );
+	void ProcessSignupRequest( const SOCKET& socket, char* packet );
 	void ProcessMove( const SOCKET& socket, char* packet );
 	void ProcessSkill( const SOCKET& socket, char* packet );
 

@@ -206,7 +206,7 @@ void NetworkManager::Disconnect( const SOCKET& socket )
 				RoomManager::GetInstance().PushRoom( room );
 				RoomManager::GetInstance().PushRoomNumber( roomNum );
 				RoomManager::GetInstance().DeleteRoom( roomNum );
-				std::cout << "방 삭제" << std::endl;
+				PRINT_LOG( "방 삭제" );
 			}
 			else
 			{
@@ -225,7 +225,7 @@ void NetworkManager::Disconnect( const SOCKET& socket )
 						PRINT_LOG( "user == nullptr" );
 						return;
 					}
-					std::cout << user->GetId() << " 유저 접속 종료" << std::endl;
+					std::cout << user->GetSocket() << " 유저 접속 종료" << std::endl;
 
 					UserManager::GetInstance().PushPlayerUnit( user );
 					UserManager::GetInstance().PushPlayerId( user->GetId() );
@@ -390,7 +390,7 @@ void NetworkManager::MainWorkProcess( )
 					// 현재 방에 3명 존재 시 게임 시작
 					if ( currentRoom->GetPlayers().size() == InitWorld::INGAMEPLAYER_NUM )
 					{
-						std::cout << "방에 3명 입장" << std::endl;
+						PRINT_LOG( "방에 3명 입장" );
 						currentRoom->SetState( RoomState::GAME );
 						// 방에 있는 플레이어들에게 각각의 플레이어들 초기 정보 전송 (고유 색, 이름 등)
 						const std::vector<SOCKET> others = currentRoom->GetPlayers();
@@ -430,10 +430,11 @@ void NetworkManager::MainWorkProcess( )
 										Packet::CollisionTile tile( packet.owner, InitWorld::FIRSTTILE_COLOR[ count - 1 ] );
 										user[ player ]->SendPacket( tile );	
 
-										std::cout << player << "에게 " << other << "정보 " << "게임 시작 패킷 전송" << std::endl;
 										++count;
 									}
 								}
+
+								PRINT_LOG( "게임시작 패킷 전송 완료" );
 
 								RoomManager::GetInstance().PushTask(
 									[ roomNum ]()

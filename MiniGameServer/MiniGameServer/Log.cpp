@@ -21,7 +21,6 @@ void Log::DisplayError(const SourceLocation& sl, const char* msg )
 	if ( msg != nullptr )
 		std::cout << msg << std::endl;
 	std::cout << "[ file: " << sl.fileName << " ] [ func: " << sl.functionName <<" ] [ line: "<<std::to_string(sl.fileLine) <<" ]" << std::endl;
-	std::wcout << L"¿¡·¯ " << messageBuffer << std::endl;
 
 }
 
