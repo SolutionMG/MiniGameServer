@@ -55,14 +55,32 @@ namespace Packet
 	{
 		PacketInfo info;
 		int owner;
+		int bestScore;
 
 		// 승률도 추가될 수 잇음
 		LoginResult( const int owner, const int type/*Login Failed, Login Ok*/)
-			: info( sizeof( LoginResult ), type )
-			, owner( owner ) {}
+			: info( sizeof( LoginResult ), type ), owner( owner ), bestScore(0) {}
 	};
 
-	//struct Sign
+	// 회원가입 요청
+	struct SignUpRequest
+	{
+		PacketInfo info;
+		int owner;
+		char name[ InitPlayer::MAX_NAME ];
+		char password[ InitPlayer::MAX_PASSWORD ];
+
+		SignUpRequest( const int owner ) : info( sizeof( SignUpRequest ), ClientToServer::SIGNUP_REQUEST ), owner( owner ), name(), password() {}
+	};
+
+	//회원가입 결과 전송
+	struct SignUpResult
+	{
+		PacketInfo info;
+		int owner;
+
+		SignUpResult( const int owner, const unsigned char type ) : info(sizeof( SignUpResult ), type ), owner( owner ) { }
+	};
 
 	// 서버에서 미니게임 씬 전환 요청 및 초기화 정보 전송
 	// 클라이언트에서 해당 패킷을 받고 플레이어들의 초기 위치, 고유 색상을 Set
@@ -98,7 +116,7 @@ namespace Packet
 		float directionX;
 		float directionY;
 
-		Move( const int owner, const int type/*ClientToServer::Move, ServerToClient::Move*/)
+		Move( const int owner, const unsigned char type/*ClientToServer::Move, ServerToClient::Move*/)
 			: info( sizeof( Move ), type )
 			, owner( owner ), speed(), x(), y(), directionX(), directionY()	{}
 	};

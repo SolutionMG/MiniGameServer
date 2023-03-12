@@ -9,7 +9,7 @@ namespace InitPacket
 
 namespace InitPlayer
 {
-	constexpr int MAX_NAME = 16;
+	constexpr int MAX_NAME = 18;
 	constexpr int MAX_PASSWORD = 32;
 	constexpr float INITPOSITION_X[ 3 ] = { 1726.f, 1366.f , 2086.f };
 	constexpr float INITPOSITION_Y[ 3 ] = { 1486.f, 2206.f, 2206.f };
@@ -66,6 +66,7 @@ namespace ClientToServer
 	constexpr unsigned char LOGIN_REQUEST = 0;
 	constexpr unsigned char MOVE = 1;
 	constexpr unsigned char SKILLUSE_REQUEST = 2;
+	constexpr unsigned char SIGNUP_REQUEST = 3;
 }
 // SERVER
 namespace ServerToClient
@@ -85,6 +86,9 @@ namespace ServerToClient
 	constexpr unsigned char SKILLUSE_REQUEST_FAILED = 12;
 	constexpr unsigned char MP_UPDATE = 13;
 	constexpr unsigned char SKILLEND = 14;
+	constexpr unsigned char SIGNUP_OK = 15;
+	constexpr unsigned char SIGNUP_FAILED = 15;
+
 }
 
 #endif // !INITDEFINE

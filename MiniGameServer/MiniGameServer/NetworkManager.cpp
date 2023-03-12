@@ -102,9 +102,6 @@ bool NetworkManager::RunServer( )
 
 #if NDEBUG
 	DataBaseManager::GetInstance().DBConnect();
-	//DataBaseManager::GetInstance().SignUp( "지은", "12345" );
-	//int best = 0;
-	//DataBaseManager::GetInstance().LogOn( "지은", "12345", best );
 #endif
 	UserManager::GetInstance().Run();
 	RoomManager::GetInstance().Run();

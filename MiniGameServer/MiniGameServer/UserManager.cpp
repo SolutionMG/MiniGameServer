@@ -70,51 +70,95 @@ void UserManager::AddProcess( )
 {
 	m_processFunctions.reserve( 10 );
 	m_processFunctions.emplace( std::make_pair( ClientToServer::LOGIN_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessLoginRequest( socket, packet ); } ) ));
+	m_processFunctions.emplace( std::make_pair( ClientToServer::SIGNUP_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessSignupRequest( socket, packet ); } ) ) );
 	m_processFunctions.emplace( std::make_pair( ClientToServer::MOVE, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessMove( socket, packet ); } ) ) );
 	m_processFunctions.emplace( std::make_pair( ClientToServer::SKILLUSE_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessSkill( socket, packet ); } ) ) );
 }
 
 void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 {
+	// 로그인 요청 
 	if ( !packet )
 	{
 		PRINT_LOG( "packet == nullptr" );
 		return;
 	}
 
+	Packet::LoginRequest data = *reinterpret_cast< Packet::LoginRequest* > ( packet );
+
 	if ( m_users.find( socket ) == m_users.end() )
 	{
-		PRINT_LOG( "socket == null, 존재하지 않는 유저로부터의 패킷입니다." );
+		PRINT_LOG( "socket == nullptr" );
 		return;
 	}
 
-	// 로그인 요청 후 
 	PlayerUnit* player = m_users[ socket ];
-	int id = player->GetId();
 
-	Packet::LoginRequest data = *reinterpret_cast< Packet::LoginRequest* > ( packet );
-	int baseScore = 0;
+	if ( !player )
+	{
+		PRINT_LOG( "player == nullptr" );
+		return;
+	}
+
+	int id = player->GetId();
+	int bestScore = 0;
 
 #if NDEBUG
-	if ( DataBaseManager::GetInstance().LogOn( data.name, data.password, baseScore ) )
+	Packet::LoginResult send( id, ServerToClient::LOGON_FAILED );
+	if ( DataBaseManager::GetInstance().LogOn( data.name, data.password, bestScore ) )
 	{
-		Packet::LoginResult send( id, ServerToClient::LOGON_OK );
+		send.info.type = ServerToClient::LOGON_OK;
+		send.bestScore = bestScore;
 		player->SetName( data.name );
+		player->SetBestScore( bestScore );
 		player->SendPacket( send );
+		return;
 	}
-	else
-	{
-		Packet::LoginResult send( id, ServerToClient::LOGON_FAILED );
-		player->SendPacket( send );
-	}
+
+	player->SendPacket( send );
+	
 #endif // _DEBUG
 
 }
 
 void UserManager::ProcessSignupRequest( const SOCKET& socket, char* packet )
 {
-	//Packet::sign data = *reinterpret_cast< Packet::LoginRequest* > ( packet );
+	// 회원가입 요청
+	if ( !packet )
+	{
+		PRINT_LOG( "packet == nullptr" );
+		return;
+	}
 
+	Packet::SignUpRequest data = *reinterpret_cast< Packet::SignUpRequest* > ( packet );
+
+	if ( m_users.find( socket ) == m_users.end() )
+	{
+		PRINT_LOG( "socket == nullptr" );
+		return;
+	}
+
+	PlayerUnit* player = m_users[ socket ];
+
+	if ( !player )
+	{
+		PRINT_LOG( "player == nullptr" );
+		return;
+	}
+
+	Packet::SignUpResult result( player->GetId(), ServerToClient::SIGNUP_FAILED );
+#if NDEBUG
+	if ( DataBaseManager::GetInstance().SignUp( data.name, data.password ) )
+	{
+		result.info.type = ServerToClient::SIGNUP_OK ;
+		player->SetName( data.name );
+		player->SendPacket( result );
+		PRINT_LOG( "회원가입 성공" );
+		return;
+	}
+	player->SendPacket( result );
+	PRINT_LOG( "회원가입 실패" );
+#endif
 }
 
 void UserManager::ProcessMove( const SOCKET& socket, char* packet )
@@ -168,7 +212,6 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		{
 			if ( index == socket )
 				continue;
-
 			m_users[ index ]->SendPacket( send );
 		}
 	}
