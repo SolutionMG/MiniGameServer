@@ -2,7 +2,7 @@
 #include "PlayerUnit.h"
 
 PlayerUnit::PlayerUnit( const SOCKET& socket )
-	: ClientUnit( socket ), m_score(1), m_color(0), m_stronger(false), m_mp(0), m_skillDuration(0)
+	: ClientUnit( socket ), m_score(1), m_color(0), m_stronger(false), m_mp(0), m_skillDuration(0), m_bestScore(0)
 {
 }
 

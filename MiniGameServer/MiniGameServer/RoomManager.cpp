@@ -121,7 +121,12 @@ void RoomManager::UpdateRoomTimer()
 					} );
 			}
 
-			user->SendPacket( packet );
+			UserManager::GetInstance().PushTask(
+			[ index, packet ]()
+			{
+				UserManager::GetInstance().GetUser( index )->SendPacket( packet );
+			} );
+			
 		}
 
 		if ( time == InitWorld::ENDGAMETIME + InitWorld::STARTGAMEDELAY )

@@ -311,18 +311,12 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			PRINT_LOG( "맵 외부의 좌표 수신" );
 			return;
 		}
-
-		Tile tile = room->GetTile( blockIndex );
-
-		if ( tile.color == color )
-			return;
-		
-		if ( MathManager::GetInstance().CollisionPointAndRectangle( currentPos.x, currentPos.y, tile.x, tile.y) )
+			
 		{
 			//std::cout << player->GetId() << "의 충돌 정보 전송" << blockIndex << std::endl;
 			//타일 색 충돌 플레이어 색으로 변경
 			RoomManager::GetInstance().PushTask(
-			[ blockIndex, roomNum, color, socket ]()
+			[ blockIndex, roomNum, color, socket, currentPos ]()
 			{
 				RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
 				if ( !room )
@@ -330,81 +324,90 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 					PRINT_LOG( "존재하지 않는 방입니다." );
 					return;
 				}
-				auto& players = room->GetPlayers();
-				short tilecolor = room->GetTile( blockIndex ).color;
 
-				UserManager::GetInstance().PushTask(
-				[ socket, players, blockIndex, tilecolor ]()
+				Tile tile = room->GetTile( blockIndex );
+				const short beforeColor = tile.color;
+				if ( beforeColor == color )
+					return;
+
+				if ( MathManager::GetInstance().CollisionPointAndRectangle( currentPos.x, currentPos.y, tile.x, tile.y ) )
 				{
-					unsigned char basePlayerScore = 0;
-					int basePlayer = -1;
-					PlayerUnit* player = UserManager::GetInstance().GetUser( socket );
+					// 발판 색 변경
+					room->SetTileColor( blockIndex, color );
 
-					//하얀 색 발판이면 점수를 하락시킬 플레이어가 없음
-					if ( tilecolor != 0 )
+					auto& players = room->GetPlayers();
+
+					UserManager::GetInstance().PushTask(
+					[ socket, players, blockIndex, beforeColor ]()
 					{
-						// 본인이 아닌 해당 발판의 기존 색상 플레이어 점수 하락
-						for ( auto& index : players )
+							unsigned char basePlayerScore = 0;
+						int basePlayer = -1;
+						PlayerUnit* player = UserManager::GetInstance().GetUser( socket );
+
+						//하얀 색 발판이면 점수를 하락시킬 플레이어가 없음
+						if ( beforeColor != 0 )
 						{
-							if ( index == socket )
-								continue;
-
-							PlayerUnit* user = UserManager::GetInstance().GetUser( index );
-
-							if ( user->GetColor() == tilecolor )
+							// 본인이 아닌 해당 발판의 기존 색상 플레이어 점수 하락
+							for ( auto& index : players )
 							{
-								// 해당 플레이어 점수는 정상적이라면 1점 이상이어야 함.
-								basePlayerScore = user->GetScore();
+								if ( index == socket )
+									continue;
 
-								if ( basePlayerScore == 0 )
+								PlayerUnit* user = UserManager::GetInstance().GetUser( index );
+
+								if ( user->GetColor() == beforeColor )
 								{
+									basePlayerScore = user->GetScore();
+
+									if ( basePlayerScore == 0 )
+									{
+										break;
+									}
+
+									basePlayer = user->GetId();
+									user->SetScore( --basePlayerScore );
 									break;
 								}
-
-								basePlayer = user->GetId();
-								user->SetScore( --basePlayerScore );
-								break;
 							}
 						}
-					}
 
-					// mp정보 갱신
-
-					unsigned char mp = player->GetMp();
-					if ( mp != InitPlayer::SKILLENABLE && !player->GetStronger())
-					{
-						mp = min( mp + InitPlayer::MPCOUNT, InitPlayer::SKILLENABLE );
-						player->SetMp( mp );
-
-						Packet::PlayerMpUpdate mpPacket( player->GetId(), mp );
-						player->SendPacket( mpPacket );
-					}
-
-					// 발판 충돌 플레이어 점수 상승
-					unsigned char newPlayerScore = player->GetScore() + 1;
-					player->SetScore( newPlayerScore );
-
-					Packet::Score upScore( player->GetId(), newPlayerScore );
-					Packet::Score downScore( basePlayer, basePlayerScore );
-
-					// 같은 방에 있는 플레이어들에게 정보 전송
-					for ( const auto& index : players )
-					{
-						// 충돌 정보 전송
-						Packet::CollisionTile collisionPacket = Packet::CollisionTile( player->GetId(), blockIndex);
-						UserManager::GetInstance().GetUser( index )->SendPacket( collisionPacket );
-				
-						// 점수 상승 정보 전송
-						UserManager::GetInstance().GetUser( index )->SendPacket( upScore );
-
-						// 점수 하락시킬 플레이어가 있을 경우 해당 정보 전송
-						if ( basePlayer != -1 )
+						// mp정보 갱신
+						unsigned char mp = player->GetMp();
+						if ( mp != InitPlayer::SKILLENABLE && !player->GetStronger() )
 						{
-							UserManager::GetInstance().GetUser( index )->SendPacket( downScore );
+							mp = min( mp + InitPlayer::MPCOUNT, InitPlayer::SKILLENABLE );
+							player->SetMp( mp );
+
+							Packet::PlayerMpUpdate mpPacket( player->GetId(), mp );
+							player->SendPacket( mpPacket );
 						}
-					}
-				} );
-				room->SetTileColor( blockIndex, color );
+
+						// 발판 충돌 플레이어 점수 상승
+						unsigned char newPlayerScore = player->GetScore() + 1;
+
+						player->SetScore( newPlayerScore );
+
+						Packet::Score upScore( player->GetId(), newPlayerScore );
+						Packet::Score downScore( basePlayer, basePlayerScore );
+
+						// 같은 방에 있는 플레이어들에게 정보 전송
+						for ( const auto& index : players )
+						{
+							// 충돌 정보 전송
+							Packet::CollisionTile collisionPacket = Packet::CollisionTile( player->GetId(), blockIndex );
+							UserManager::GetInstance().GetUser( index )->SendPacket( collisionPacket );
+
+							// 점수 상승 정보 전송
+							UserManager::GetInstance().GetUser( index )->SendPacket( upScore );
+							// 점수 하락시킬 플레이어가 있을 경우 해당 정보 전송
+							if ( basePlayer != -1 )
+							{
+								UserManager::GetInstance().GetUser( index )->SendPacket( downScore );
+							}
+						}
+
+					} );
+				}
 			} );
 		}
 	}
@@ -618,8 +621,14 @@ void UserManager::ProcessQuitRoom( const SOCKET& socket, char* packet )
 		UserManager::GetInstance().PushTask(
 		[ socket ]()
 		{
-			UserManager::GetInstance().GetUser( socket )->SetState( EClientState::LOGON );
-			UserManager::GetInstance().GetUser( socket )->SetRoomNumber( -1 );
+			PlayerUnit* user = UserManager::GetInstance().GetUser( socket );
+			user->SetState( EClientState::LOGON );
+			user->SetRoomNumber( -1 );
+			user->SetScore( 1 );
+			user->SetPosition( Position( 0.f, 0.f ) );
+			user->SetMp( 0 );
+			user->SetStronger( false );
+			user->SetSkillDuration( 0 );
 		} );
 	} );
 }
