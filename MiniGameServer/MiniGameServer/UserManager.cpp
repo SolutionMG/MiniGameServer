@@ -104,134 +104,36 @@ void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 
 	int id = player->GetId();
 	int bestScore = 0;
+	Packet::LoginResult send( id, ServerToClient::LOGON_FAILED );
 
 #if NDEBUG
-	Packet::LoginResult send( id, ServerToClient::LOGON_FAILED );
+	// 이미 로그인한 아이디 검사
+	for ( const auto& user : m_users )
+	{
+		std::string curName = DataBaseManager::GetInstance().DecodingString( data.name );
+		if ( user.second->GetName() == curName )
+		{
+			PRINT_LOG( "중복 로그인" );
+			send.info.type = ServerToClient::LOGIN_DUPLICATION;
+			player->SendPacket( send );
+			return;
+		}
+	}
+
 	if ( DataBaseManager::GetInstance().LogOn( data.name, data.password, bestScore ) )
 	{
 		send.info.type = ServerToClient::LOGON_OK;
 		send.bestScore = bestScore;
-		player->SetName( data.name );
+		player->SetName( DataBaseManager::GetInstance().DecodingString( data.name ) );
 		player->SetBestScore( bestScore );
 		player->SendPacket( send );
 		player->SetState( EClientState::LOGON );
 		PRINT_LOG( "로그인 성공" );
-
-		// 추후 ProcessMatching Request에서 진행
-		// Proto : 플레이어 로그인 후 3명 존재 시 바로 게임으로 넘어가도록
-		// 방으로 이동
-		RoomManager::GetInstance().PushTask(
-		[ socket ]()
-		{
-			int roomNum = -1;
-			auto& rooms = RoomManager::GetInstance().GetRooms();
-			RoomUnit* currentRoom = nullptr;
-			for ( auto& [roomIndex, roomUnit] : rooms )
-			{
-				if ( roomUnit->GetState() == RoomState::GAME )
-					continue;
-				roomNum = roomIndex;
-				currentRoom = roomUnit;
-				break;
-			}
-			// 방 새로 생성 - 3명 이하인 방이 없을 시 
-			if ( roomNum == -1 )
-			{
-				roomNum = RoomManager::GetInstance().GetNewRoomNumber();
-				currentRoom = RoomManager::GetInstance().GetRoomUnitFromPools();
-				currentRoom->SetState( RoomState::MATCHING );
-				rooms[ roomNum ] = currentRoom;
-			}
-
-			if ( !currentRoom )
-			{
-				PRINT_LOG( "currentRoom == nullptr" );
-				return;
-			}
-
-			// 방에 접속 유저 추가
-			currentRoom->PushPlayer( socket );
-
-			// 유저 상태 갱신 및 현재 접속한 방 입력
-			UserManager::GetInstance().PushTask(
-			[ socket, roomNum ]()
-			{
-				UserManager::GetInstance().GetUser( socket )->SetState( EClientState::MATCHING );
-				UserManager::GetInstance().GetUser( socket )->SetRoomNumber( roomNum );
-			} );
-
-			// 현재 방에 3명 존재 시 게임 시작
-			if ( currentRoom->GetPlayers().size() == InitWorld::INGAMEPLAYER_NUM )
-			{
-				PRINT_LOG( "방에 3명 입장" );
-				currentRoom->SetState( RoomState::GAME );
-
-				// 방에 있는 플레이어들에게 각각의 플레이어들 초기 정보 전송 (고유 색, 이름 등)
-				const std::vector<SOCKET> others = currentRoom->GetPlayers();
-				UserManager::GetInstance().PushTask(
-				[ roomNum, socket, others ]()
-				{
-					auto& users = UserManager::GetInstance().GetUsers();
-					if ( users.find( socket ) == users.end() )
-					{
-						PRINT_LOG( "user == nullptr" );
-						return;
-					}
-					int count = 1;
-					for ( const auto& player : others )
-					{
-						count = 1;
-						for ( const auto& other : others )
-						{
-							users[ player ]->SetState( EClientState::GAME );
-							// 인게임 플레이어 초기화 정보 클라이언트에게 보내기
-							Packet::InitPlayers packet( users[ other ]->GetId() );
-							packet.color = count;
-
-							Position pos = Position( InitPlayer::INITPOSITION_X[ count - 1 ], InitPlayer::INITPOSITION_Y[ count - 1 ] );
-							//위치 수정하기
-							packet.x = pos.x;
-							packet.y = pos.y;
-							packet.directionX = InitPlayer::INITDIRECTION_X[ count - 1 ];
-							packet.directionY = InitPlayer::INITDIRECTION_Y[ count - 1 ];
-							strcpy_s( packet.name, users[ other ]->GetName().c_str());
-
-							users[ other ]->SetPosition( pos );
-							users[ other ]->SetColor( count );
-							users[ player ]->SendPacket( packet );
-
-							//초기 시작 타일 색 전송
-							Packet::CollisionTile tile( packet.owner, InitWorld::FIRSTTILE_INDEX[ count - 1 ] );
-							users[ player ]->SendPacket( tile );
-
-							++count;
-						}
-					}
-
-					PRINT_LOG( "게임시작 패킷 전송 완료" );
-
-					RoomManager::GetInstance().PushTask(
-					[ roomNum ]()
-					{
-						//타이머 시작
-						RoomManager::GetInstance().PushTimer( roomNum );
-
-						//초기 시작 타일 색 변경
-						auto& room = RoomManager::GetInstance().GetRooms()[ roomNum ];
-						for ( int i = 0; i < 3; ++i )
-							room->SetTileColor( InitWorld::FIRSTTILE_INDEX[ i ], i + 1 );
-					} );
-
-				} );
-			}
-		} );
-
 		return;
 	}
+#endif // _DEBUG
 
 	player->SendPacket( send );
-	
-#endif // _DEBUG
 
 }
 
@@ -491,17 +393,15 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 						// 충돌 정보 전송
 						Packet::CollisionTile collisionPacket = Packet::CollisionTile( player->GetId(), blockIndex);
 						UserManager::GetInstance().GetUser( index )->SendPacket( collisionPacket );
+				
+						// 점수 상승 정보 전송
+						UserManager::GetInstance().GetUser( index )->SendPacket( upScore );
 
-						//봉인
-						//// 점수 상승 정보 전송
-						//m_users[ index ]->SendPacket( upScore );
-
-						//// 점수 하락시킬 플레이어가 있을 경우 해당 정보 전송
-						//if ( basePlayer != -1 )
-						//{
-						//	m_users[ index ]->SendPacket( downScore );
-						//}
-
+						// 점수 하락시킬 플레이어가 있을 경우 해당 정보 전송
+						if ( basePlayer != -1 )
+						{
+							UserManager::GetInstance().GetUser( index )->SendPacket( downScore );
+						}
 					}
 				} );
 				room->SetTileColor( blockIndex, color );

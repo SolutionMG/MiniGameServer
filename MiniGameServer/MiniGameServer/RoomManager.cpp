@@ -4,6 +4,7 @@
 #include "UserManager.h"
 #include "PlayerUnit.h"
 #include "MathManager.h"
+#include "DataBaseManager.h"
 #include "Log.h"
 
 RoomManager::RoomManager()
@@ -152,7 +153,15 @@ void RoomManager::UpdateRoomTimer()
 					{
 						//게임 종료 및 결과 패킷 전송
 						//봉인
-						//UserManager::GetInstance().GetUser(index)->SendPacket( finalinfo );
+						//PlayerUnit* player = UserManager::GetInstance().GetUser( index );
+						//player->SendPacket( finalinfo );
+						//int bestScore = player->GetBestScore();
+						//int currentScore = player->GetScore();
+						//if ( bestScore < currentScore )
+						//{
+						//	player->SetBestScore( currentScore );
+						//	DataBaseManager::GetInstance().BestScoreUpdate( player->GetName(), currentScore );
+						//}
 					}
 				} );
 

@@ -32,6 +32,7 @@ public:
 	bool DBConnect();
 	bool SignUp( const std::string& name, const std::string& password );
 	bool LogOn( const std::string& name, const std::string& password, int& bestScore OUT );
+	bool BestScoreUpdate( const std::string& name, const int& bestScore );
 #endif
 };
 

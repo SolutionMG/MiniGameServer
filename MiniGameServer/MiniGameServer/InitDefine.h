@@ -91,7 +91,7 @@ namespace ServerToClient
 	constexpr unsigned char SKILLEND					= 14;
 	constexpr unsigned char SIGNUP_OK					= 15;
 	constexpr unsigned char SIGNUP_FAILED				= 16;
-
+	constexpr unsigned char LOGIN_DUPLICATION			= 17;
 }
 
 #endif // !INITDEFINE

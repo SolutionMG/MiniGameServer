@@ -114,7 +114,6 @@ bool DataBaseManager::SignUp( const std::string& name, const std::string& passwo
 	try{
 		m_preparedStatement = m_connect->prepareStatement( "SELECT _name FROM t_Player WHERE _name = ?" );
 		m_preparedStatement->setString( 1, name );
-
 		m_result = m_preparedStatement->executeQuery();
 	}
 	catch ( sql::SQLException& e )
@@ -144,6 +143,7 @@ bool DataBaseManager::SignUp( const std::string& name, const std::string& passwo
 		std::cout << ", SQLState: " << e.getSQLState() << ")" << std::endl;
 	}
 
+	PRINT_LOG( "DataBase에 회원 정보 생성 완료" );
 	return !returnValue;
 }
 
@@ -203,7 +203,32 @@ bool DataBaseManager::LogOn( const std::string& name, const std::string& passwor
 		std::cout << ", SQLState: " << e.getSQLState() << ")" << std::endl;
 	}
 
+	PRINT_LOG( "DataBase로부터 로그인 정보 송신 완료" );
+
 	return returnValue;
+}
+
+bool DataBaseManager::BestScoreUpdate( const std::string& name, const int& bestScore )
+{
+	std::string encodeName = EncodingString( name );
+
+	try{
+		m_preparedStatement = m_connect->prepareStatement( "UPDATE t_Player SET _bestScore = ? WHERE _name = ?" );
+		m_preparedStatement->setInt(1, bestScore );
+		m_preparedStatement->setString( 2, encodeName );
+		m_preparedStatement->execute();
+	}
+	catch ( sql::SQLException& e )
+	{
+		std::cout << "err: " << e.what();
+		std::cout << "(MySQL error code : " << e.getErrorCode();
+		std::cout << ", SQLState: " << e.getSQLState() << ")" << std::endl;
+		return false;
+	}
+
+	PRINT_LOG( "best score 갱신" );
+
+	return true;
 }
 
 #endif
