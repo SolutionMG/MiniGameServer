@@ -195,27 +195,27 @@ namespace Packet
 	};
 
 	//클라 스킬 사용 요청 용 패킷
-	struct SkillUse_Request
+	struct SkillUseRequest
 	{
 		PacketInfo info;
-		SkillUse_Request( ) : info( sizeof( SkillUse_Request ), ClientToServer::SKILLUSE_REQUEST ) {}
+		SkillUseRequest( ) : info( sizeof( SkillUseRequest ), ClientToServer::SKILLUSE_REQUEST ) {}
 	};
 
 	//스킬 사용 요청 결과 전송용 패킷
-	struct SkillUse_Result
+	struct SkillUseResult
 	{
 		PacketInfo info;
 		int owner; 
-		SkillUse_Result(const int owner, const unsigned char type ) : info( sizeof( SkillUse_Result ), type ), owner(owner) {}
+		SkillUseResult(const int owner, const unsigned char type ) : info( sizeof( SkillUseResult ), type ), owner(owner) {}
 	};
 
 	// 스킬 mp 갱신용 패킷
-	struct PlayerMp_Update
+	struct PlayerMpUpdate
 	{
 		PacketInfo info;
 		int owner;
 		unsigned char mp;
-		PlayerMp_Update( const int owner, unsigned char mp ):info(sizeof(PlayerMp_Update), ServerToClient::MP_UPDATE ), owner(owner), mp(mp){}
+		PlayerMpUpdate( const int owner, unsigned char mp ):info(sizeof(PlayerMpUpdate), ServerToClient::MP_UPDATE ), owner(owner), mp(mp){}
 
 	};
 
@@ -225,6 +225,20 @@ namespace Packet
 		PacketInfo info;
 		int owner;
 		SkillEnd(const int owner ): info(sizeof( SkillEnd ), ServerToClient::SKILLEND), owner(owner){}
+	};
+
+	// 매칭 요청 패킷
+	struct MatchingRequest
+	{
+		PacketInfo info;
+		MatchingRequest() : info( sizeof( MatchingRequest ), ClientToServer::MATHCING_REQUEST ) {}
+	};
+
+	// 방 나가기
+	struct QuitRoom
+	{
+		PacketInfo info;
+		QuitRoom( const int matching ) : info( sizeof( QuitRoom ), ClientToServer::QUIT_ROOM ) {}
 	};
 }
 #pragma pack(pop)

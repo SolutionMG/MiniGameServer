@@ -57,9 +57,10 @@ public:
 	void ProcessSignupRequest( const SOCKET& socket, char* packet );
 	void ProcessMove( const SOCKET& socket, char* packet );
 	void ProcessSkill( const SOCKET& socket, char* packet );
+	void ProcessMatchingRequest( const SOCKET& socket, char* packet );
+	void ProcessQuitRoom( const SOCKET& socket, char* packet );
 
 	void DeleteUser( const SOCKET& socket );
-
 };
 
 #endif // !USERMANAGER_H

@@ -123,7 +123,7 @@ void RoomManager::UpdateRoomTimer()
 			user->SendPacket( packet );
 		}
 
-		if ( time == InitWorld::ENDGAMETIME )
+		if ( time == InitWorld::ENDGAMETIME + InitWorld::STARTGAMEDELAY )
 		{
 			// 게임 종료
 			// 타이머에서 해당 방 삭제, 게임 종료 패킷 각 플레이어들에게 전송
