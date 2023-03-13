@@ -60,10 +60,10 @@ bool DataBaseManager::DBConnect( )
 		sql::ConnectOptionsMap connection_options{};
 		connection_options[ "hostName" ]					= "tcp://127.0.0.1:3306";
 		connection_options[ "userName" ]					= "root";
-		connection_options[ "password" ]					= "487591";		//- 회사
-		connection_options[ "schema" ]						= "MiniGame";	//- 회사
-		//connection_options[ "password" ]					= "jin980827";  //	- 집
-		//connection_options[ "schema" ]					= "Minigame";   //	- 집
+		//connection_options[ "password" ]					= "487591";		//- 회사
+		//connection_options[ "schema" ]					= "MiniGame";	//- 회사
+		connection_options[ "password" ]					= "jin980827";  //	- 집
+		connection_options[ "schema" ]						= "Minigame";   //	- 집
 		connection_options[ "characterSetResults" ]			= "utf8mb4";
 		connection_options[ "clientCharacterSet" ]			= "utf8mb4";
 		connection_options[ "OPT_CHARSET_NAME" ]			= "utf8mb4";
