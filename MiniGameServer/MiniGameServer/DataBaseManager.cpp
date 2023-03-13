@@ -60,10 +60,10 @@ bool DataBaseManager::DBConnect( )
 		sql::ConnectOptionsMap connection_options{};
 		connection_options[ "hostName" ]					= "tcp://127.0.0.1:3306";
 		connection_options[ "userName" ]					= "root";
-		//connection_options[ "password" ]					= "487591";		- 회사
-		//connection_options[ "schema" ]					= "MiniGame";		- 회사
-		connection_options[ "password" ]					= "jin980827"; //	- 집
-		connection_options[ "schema" ]						= "Minigame";    //	- 집
+		connection_options[ "password" ]					= "487591";		//- 회사
+		connection_options[ "schema" ]						= "MiniGame";	//- 회사
+		//connection_options[ "password" ]					= "jin980827";  //	- 집
+		//connection_options[ "schema" ]					= "Minigame";   //	- 집
 		connection_options[ "characterSetResults" ]			= "utf8mb4";
 		connection_options[ "clientCharacterSet" ]			= "utf8mb4";
 		connection_options[ "OPT_CHARSET_NAME" ]			= "utf8mb4";
@@ -105,8 +105,11 @@ bool DataBaseManager::SignUp( const std::string& name, const std::string& passwo
 		return false;
 	}
 	
-	std::string encodeName = EncodingString(name);
-	std::string encodePassword = EncodingString( password );
+	std::cout << name << std::endl;
+	std::cout << password << std::endl;
+
+	//std::string encodeName = EncodingString(name);
+	//std::string encodePassword = EncodingString( password );
 
 	try{
 		m_preparedStatement = m_connect->prepareStatement( "SELECT _name FROM t_Player WHERE _name = ?" );
@@ -130,8 +133,8 @@ bool DataBaseManager::SignUp( const std::string& name, const std::string& passwo
 	// 아이디 생성
 	try{
 		m_preparedStatement = m_connect->prepareStatement( "INSERT INTO t_Player (_name, _password)  VALUES (?, ?)" );
-		m_preparedStatement->setString( 1, encodeName );
-		m_preparedStatement->setString( 2, encodePassword );
+		m_preparedStatement->setString( 1, name );
+		m_preparedStatement->setString( 2, password );
 		m_preparedStatement->execute();
 	}
 	catch ( sql::SQLException& e )
@@ -159,13 +162,13 @@ bool DataBaseManager::LogOn( const std::string& name, const std::string& passwor
 		return false;
 	}
 
-	std::string encodeName = EncodingString( name );
-	std::string encodePassword = EncodingString( password );
+	//std::string encodeName = EncodingString( name );
+	//std::string encodePassword = EncodingString( password );
 
 	try{
 		m_preparedStatement = m_connect->prepareStatement( "SELECT _name, _bestScore FROM t_player WHERE _name = ? AND _password = ?" );
-		m_preparedStatement->setString( 1, encodeName );
-		m_preparedStatement->setString( 2, encodePassword );
+		m_preparedStatement->setString( 1, name );
+		m_preparedStatement->setString( 2, password );
 		m_result = m_preparedStatement->executeQuery();
 	}
 	catch ( sql::SQLException& e )

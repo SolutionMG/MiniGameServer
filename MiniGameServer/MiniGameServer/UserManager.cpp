@@ -112,7 +112,7 @@ void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 		player->SetName( data.name );
 		player->SetBestScore( bestScore );
 		player->SendPacket( send );
-
+		PRINT_LOG( "로그인 성공" );
 		// 플레이어 로그인 후 3명 존재 시 바로 게임으로 넘어가도록
 		// 방으로 이동
 		RoomManager::GetInstance().PushTask(
@@ -196,7 +196,7 @@ void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 									users[ player ]->SendPacket( packet );
 
 									//초기 시작 타일 색 전송
-									Packet::CollisionTile tile( packet.owner, InitWorld::FIRSTTILE_COLOR[ count - 1 ] );
+									Packet::CollisionTile tile( packet.owner, InitWorld::FIRSTTILE_INDEX[ count - 1 ] );
 									users[ player ]->SendPacket( tile );
 
 									++count;
@@ -214,13 +214,10 @@ void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 									//초기 시작 타일 색 변경
 									auto& room = RoomManager::GetInstance().GetRooms()[ roomNum ];
 									for ( int i = 0; i < 3; ++i )
-										room->SetTileColor( InitWorld::FIRSTTILE_COLOR[ i ], i + 1 );
+										room->SetTileColor( InitWorld::FIRSTTILE_INDEX[ i ], i + 1 );
 								} );
 
 						} );
-
-						//게임 타이머 시작
-
 				}
 			} );
 

@@ -40,7 +40,7 @@ namespace InitWorld
 	constexpr float FIRST_TILEPOSITION_Y = 766.f;
 
 	//첫 시작 블록, 색칠되어있을 인덱스
-	constexpr int FIRSTTILE_COLOR[ 3 ] = { 17,30,32 };
+	constexpr int FIRSTTILE_INDEX[ 3 ] = { 17,30,32 };
 
 	// 게임 종료 시간
 	constexpr unsigned char ENDGAMETIME = 66; /* 실제 게임 시간 = 60초, 게임 시작 후 정지 시간 6초*/
