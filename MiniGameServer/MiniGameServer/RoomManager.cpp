@@ -133,7 +133,7 @@ void RoomManager::UpdateRoomTimer()
 			Packet::EndGame finalinfo;
 			int count = 0;
 
-			for ( auto& index : players )
+			for (const auto& index : players )
 			{
 				PlayerUnit* user = UserManager::GetInstance().GetUser( index );
 				if ( !user )
@@ -141,13 +141,20 @@ void RoomManager::UpdateRoomTimer()
 
 				//게임 종료 패킷 전송
 				finalinfo.playerInfo[ count ].owner = user->GetId();
-				finalinfo.playerInfo[ count++ ].score = user->GetScore();
-
-				//게임 종료 패킷 전송
-				//봉인
-				//task로 send?
-				//user->SendPacket( finalinfo );
+				finalinfo.playerInfo[ count++ ].score = user->GetScore();				
 			}
+
+	
+			UserManager::GetInstance().PushTask(
+				[ finalinfo, players ]()
+				{
+					for ( const auto& index : players )
+					{
+						//게임 종료 및 결과 패킷 전송
+						//봉인
+						//UserManager::GetInstance().GetUser(index)->SendPacket( finalinfo );
+					}
+				} );
 
 			PRINT_LOG( "게임 종료 시간 도달" );
 		}
