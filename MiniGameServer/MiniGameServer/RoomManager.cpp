@@ -70,6 +70,7 @@ void RoomManager::UpdateRoomTimer()
 		if ( !room )
 		{
 			PRINT_LOG( "room == nullptr" );
+			m_deleteRoomTimers.emplace_back( roomNum );
 			continue;
 		}
 
@@ -152,23 +153,23 @@ void RoomManager::UpdateRoomTimer()
 
 	
 			UserManager::GetInstance().PushTask(
-				[ finalinfo, players ]()
+			[ finalinfo, players ]()
+			{
+				for ( const auto& index : players )
 				{
-					for ( const auto& index : players )
+					//게임 종료 및 결과 패킷 전송
+					//봉인
+					PlayerUnit* player = UserManager::GetInstance().GetUser( index );
+					player->SendPacket( finalinfo );
+					int bestScore = player->GetBestScore();
+					int currentScore = player->GetScore();
+					if ( bestScore < currentScore )
 					{
-						//게임 종료 및 결과 패킷 전송
-						//봉인
-						//PlayerUnit* player = UserManager::GetInstance().GetUser( index );
-						//player->SendPacket( finalinfo );
-						//int bestScore = player->GetBestScore();
-						//int currentScore = player->GetScore();
-						//if ( bestScore < currentScore )
-						//{
-						//	player->SetBestScore( currentScore );
-						//	DataBaseManager::GetInstance().BestScoreUpdate( player->GetName(), currentScore );
-						//}
+						player->SetBestScore( currentScore );
+						DataBaseManager::GetInstance().BestScoreUpdate( player->GetName(), currentScore );
 					}
-				} );
+				}
+			} );
 
 			PRINT_LOG( "게임 종료 시간 도달" );
 		}
