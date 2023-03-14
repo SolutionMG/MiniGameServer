@@ -78,7 +78,7 @@ void RoomManager::UpdateRoomTimer()
 		if ( timer.requestTime /*요청시간*/ > std::chrono::system_clock::now()/*현재*/ )
 		{
 			m_pushUpdateTimers.emplace_back( timer );
-			PRINT_LOG( "1초가 지나지 않음" );
+			//PRINT_LOG( "1초가 지나지 않음" );
 			continue;
 		}
 
@@ -89,23 +89,21 @@ void RoomManager::UpdateRoomTimer()
 
 		//각 방의 플레이어들에게 타이머 Send
 		auto& players = room->GetPlayers();
-		Packet::Timer packet( time );
+		Packet::Timer timePacket( time );
 
 		for ( auto& index : players )
-		{
-			PlayerUnit* user = UserManager::GetInstance().GetUser( index );
-			if ( !user )
-				continue;
-
-			if ( user->GetPlayerState() == EPlayerState::STRONGER )
+		{			
+			UserManager::GetInstance().PushTask(
+			[ index, time, players ]()
 			{
-				UserManager::GetInstance().PushTask(
-				[ index, time, roomNum ]()
-				{
-					PlayerUnit* user = UserManager::GetInstance().GetUser( index );
-					if ( !user )
-						return;
+				PlayerUnit* user = UserManager::GetInstance().GetUser( index );
+				if ( !user )
+					return;
 
+				const EPlayerState state = user->GetPlayerState();
+
+				if ( state == EPlayerState::STRONGER )
+				{
 					if ( user->GetSkillDuration() != InitPlayer::SKILLDURATION )
 					{
 						user->SetSkillDuration( user->GetSkillDuration() + 1 );
@@ -113,35 +111,19 @@ void RoomManager::UpdateRoomTimer()
 					}
 					// 스킬 사용 후 충돌이 일어나지 않아서 스킬 지속시간이 다됐을 경우
 					//PRINT_LOG( "스킬 사용 종료" );
-					user->SetPlayerState( EPlayerState::NORMAL);
+					user->SetPlayerState( EPlayerState::NORMAL );
 					user->SetSkillDuration( 0 );
 
 					Packet::SkillEnd skillend( user->GetId() );
-
-					RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
-					if ( !room )
-					{
-						PRINT_LOG( "room == nullptr" );
-					}
-					auto& players = room->GetPlayers();
 
 					for ( const auto& p : players )
 					{
 						UserManager::GetInstance().GetUsers()[ p ]->SendPacket( skillend );
 					}
 
-				} );
-			}
-
-			else if ( user->GetPlayerState() == EPlayerState::STUN )
-			{
-				UserManager::GetInstance().PushTask(
-				[ index, time, roomNum ]()
+				}
+				else if ( state == EPlayerState::STUN )
 				{
-					PlayerUnit* user = UserManager::GetInstance().GetUser( index );
-					if ( !user )
-						return;
-
 					if ( user->GetStunDuration() != InitPlayer::STUNDURATION )
 					{
 						user->SetStunDuration( user->GetStunDuration() + 1 );
@@ -152,24 +134,17 @@ void RoomManager::UpdateRoomTimer()
 
 					Packet::StunEnd stunend( user->GetId() );
 
-					RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
-					if ( !room )
-					{
-						PRINT_LOG( "room == nullptr" );
-					}
-					auto& players = room->GetPlayers();
-
 					for ( const auto& p : players )
 					{
 						UserManager::GetInstance().GetUsers()[ p ]->SendPacket( stunend );
 					}
-				} );
-			}
-
+				}
+			} );
+			
 			UserManager::GetInstance().PushTask(
-			[ index, packet ]()
+			[ index, timePacket ]()
 			{
-				UserManager::GetInstance().GetUser( index )->SendPacket( packet );
+				UserManager::GetInstance().GetUser( index )->SendPacket( timePacket );
 			} );
 			
 		}
@@ -177,23 +152,23 @@ void RoomManager::UpdateRoomTimer()
 		if ( time == InitWorld::ENDGAMETIME + InitWorld::STARTGAMEDELAY )
 		{
 			// 게임 종료
-			Packet::EndGame finalinfo;
-			int count = 0;
-
-			for (const auto& index : players )
-			{
-				PlayerUnit* user = UserManager::GetInstance().GetUser( index );
-				if ( !user )
-					continue;
-
-				//게임 종료 패킷 전송
-				finalinfo.playerInfo[ count ].owner = user->GetId();
-				finalinfo.playerInfo[ count++ ].score = user->GetScore();				
-			}
-
 			UserManager::GetInstance().PushTask(
-			[ finalinfo, players ]()
+			[ players ]()
 			{
+				Packet::EndGame finalinfo;
+				int count = 0;
+
+				for ( const auto& index : players )
+				{
+					PlayerUnit* user = UserManager::GetInstance().GetUser( index );
+					if ( !user )
+						continue;
+
+					//게임 종료 패킷 전송
+					finalinfo.playerInfo[ count ].owner = user->GetId();
+					finalinfo.playerInfo[ count++ ].score = user->GetScore();
+				}
+
 				for ( const auto& index : players )
 				{
 					//게임 종료 및 결과 패킷 전송

@@ -21,5 +21,5 @@ void PlayerUnit::Initialize()
 	SetId( -1 );
 	SetMp( 0 );
 	SetSkillDuration( 0 );
-	SetStunDuration( 9 );
+	SetStunDuration( 0 );
 }
