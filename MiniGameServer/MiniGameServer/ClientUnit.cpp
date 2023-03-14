@@ -5,7 +5,7 @@
 ClientUnit::ClientUnit( const SOCKET& socket )
 	: m_socket( socket )
 	, m_over()
-	, m_state( EClientState::DISCONNECT )
+	, m_clientState( EClientState::DISCONNECT )
 	, m_previousReceivePosition( 0 )
 	, m_roomNumber( -1 )
 	, m_pId( -1 )

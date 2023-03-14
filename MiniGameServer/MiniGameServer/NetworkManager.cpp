@@ -189,7 +189,7 @@ void NetworkManager::Disconnect( const SOCKET& socket )
 
 			int id = user->GetId();
 			int roomNum = user->GetRoomNum();
-			EClientState state = user->GetState();
+			EClientState state = user->GetClientState();
 
 			//접속 종료 플레이어 유저 관리 객체에서 삭제
 			UserManager::GetInstance().PushTask(
@@ -330,7 +330,7 @@ void NetworkManager::MainWorkProcess( )
 						users[ userKey ] = UserManager::GetInstance().GetPlayerUnitFromPools();
 						users[ userKey ]->SetSocket( userKey );
 						users[ userKey ]->SetOverlappedOperation( EOperationType::RECV );
-						users[ userKey ]->SetState( EClientState::ACCESS ); 
+						users[ userKey ]->SetClientState( EClientState::ACCESS ); 
 						users[ userKey ]->SetId( UserManager::GetInstance().GetPlayerId() );
 
 						Packet::FirstPlayer packet( users[ userKey ]->GetId() );

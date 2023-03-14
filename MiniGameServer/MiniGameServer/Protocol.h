@@ -238,7 +238,22 @@ namespace Packet
 	struct QuitRoom
 	{
 		PacketInfo info;
-		QuitRoom( const int matching ) : info( sizeof( QuitRoom ), ClientToServer::QUIT_ROOM ) {}
+		QuitRoom() : info( sizeof( QuitRoom ), ClientToServer::QUIT_ROOM ) {}
+	};
+	
+	// 스턴 당한 플레이어
+	struct StunStart
+	{
+		PacketInfo info;
+		int owners[3];
+		StunStart() : info( sizeof( StunStart ), ServerToClient::PLAYER_STUNSTART ), owners{ -1,-1,-1 } {}
+	};
+
+	struct StunEnd
+	{
+		PacketInfo info;
+		int owner;
+		StunEnd( const int owner ) : info( sizeof( StunEnd ), ServerToClient::PLAYER_STUNEND ), owner( owner ) {}
 	};
 }
 #pragma pack(pop)

@@ -16,9 +16,10 @@ namespace InitPlayer
 	constexpr float INITDIRECTION_X[ 3 ]	= { 0.f, -0.866f, 0.866f };
 	constexpr float INITDIRECTION_Y[ 3 ]	= { -1.f, 0.5f, 0.5f };
 
-	constexpr unsigned char SKILLENABLE		= 10;  /*스킬 사용에 필요한 mp*/
-	constexpr unsigned char MPCOUNT			= 1;		/*한번 블록 충돌 시 상승할 mp*/
+	constexpr unsigned char SKILLENABLE		= 15;  /*스킬 사용에 필요한 mp*/
+	constexpr unsigned char MPCOUNT			= 1;   /*한번 블록 충돌 시 상승할 mp*/
 	constexpr unsigned char SKILLDURATION	= 3;  /*스킬 지속시간*/
+	constexpr unsigned char STUNDURATION	= 2;
 }
 
 namespace InitWorld
@@ -45,6 +46,7 @@ namespace InitWorld
 	// 게임 종료 시간
 	constexpr unsigned char ENDGAMETIME		= 60; /* 실제 게임 시간 = 60초, 게임 시작 후 정지 시간 6초*/
 	constexpr unsigned char STARTGAMEDELAY	= 6;
+	constexpr unsigned char	AUTOQUIT		= 5; /* 자동 나가기 */
 
 	// 벽 정보
 	constexpr float MINIMUM_X = FIRST_TILEPOSITION_X - 25.f;
@@ -92,6 +94,9 @@ namespace ServerToClient
 	constexpr unsigned char SIGNUP_OK					= 15;
 	constexpr unsigned char SIGNUP_FAILED				= 16;
 	constexpr unsigned char LOGIN_DUPLICATION			= 17;
+	constexpr unsigned char PLAYER_STUNSTART			= 18;
+	constexpr unsigned char PLAYER_STUNEND				= 19;
+
 }
 
 #endif // !INITDEFINE

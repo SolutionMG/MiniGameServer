@@ -3,7 +3,7 @@
 
 enum class EClientState : char
 {
-	ACCESS, LOGON, MATCHING, GAME, DISCONNECT /*접속, 로그인, 매칭중, 게임중, 종료 */
+	ACCESS, LOGON, MATCHING, GAME, GAMEFINISH, DISCONNECT /*접속, 로그인, 매칭중, 게임중, 종료 */
 };
 
 class ClientUnit
@@ -12,7 +12,7 @@ protected:
 	SOCKET m_socket;
 	int m_pId;
 	WSAOVERLAPPED_EXTEND m_over;
-	EClientState m_state;
+	EClientState m_clientState;
 
 	//현재 속해있는 방 번호
 	int m_roomNumber; 
@@ -28,7 +28,7 @@ public:
 	void SetSocket( const SOCKET& s )									{ m_socket = s;}
 	void SetOverlappedExtend( const WSAOVERLAPPED_EXTEND& over )		{ memcpy_s( &m_over, sizeof( m_over ), &over, sizeof( over ) ); }
 	void SetOverlappedOperation( const EOperationType& operation )		{ m_over.type = operation; }
-	void SetState( const EClientState& state )							{ m_state = state; }
+	void SetClientState( const EClientState& state )					{ m_clientState = state; }
 	void SetPreviousReceivePosition( const int& position )				{ m_previousReceivePosition = position; }
 	void SetRoomNumber( const int& roomNum )							{ m_roomNumber = roomNum; }
 	void SetId( const int& id )											{ m_pId = id; }
@@ -36,7 +36,7 @@ public:
 	///Get 
 	const SOCKET& GetSocket( )											{ return m_socket; }
 	const WSAOVERLAPPED_EXTEND& GetOverlappedExtend( )					{ return m_over; }
-	const EClientState& GetState( ) const								{ return m_state; }
+	const EClientState& GetClientState( ) const							{ return m_clientState; }
 	const int& GetPreviousReceivePosition( )							{ return m_previousReceivePosition; }
 	const int& GetRoomNum( )											{ return m_roomNumber; }
 	const int& GetId()													{ return m_pId; }

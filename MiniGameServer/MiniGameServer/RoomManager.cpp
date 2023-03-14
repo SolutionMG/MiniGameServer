@@ -87,39 +87,73 @@ void RoomManager::UpdateRoomTimer()
 			if ( !user )
 				continue;
 
-			if ( user->GetStronger() )
+			if ( user->GetPlayerState() == EPlayerState::STRONGER )
 			{
 				UserManager::GetInstance().PushTask(
-					[ index, time, roomNum ]()
+				[ index, time, roomNum ]()
+				{
+					PlayerUnit* user = UserManager::GetInstance().GetUser( index );
+					if ( !user )
+						return;
+
+					if ( user->GetSkillDuration() != InitPlayer::SKILLDURATION )
 					{
-						PlayerUnit* user = UserManager::GetInstance().GetUser( index );
-						if ( !user )
-							return;
+						user->SetSkillDuration( user->GetSkillDuration() + 1 );
+						return;
+					}
+					// 스킬 사용 후 충돌이 일어나지 않아서 스킬 지속시간이 다됐을 경우
+					//PRINT_LOG( "스킬 사용 종료" );
+					user->SetPlayerState( EPlayerState::NORMAL);
+					user->SetSkillDuration( 0 );
 
-						if ( user->GetSkillDuration() != InitPlayer::SKILLDURATION )
-						{
-							user->SetSkillDuration( user->GetSkillDuration() + 1 );
-							return;
-						}
-						// 스킬 사용 후 충돌이 일어나지 않아서 스킬 지속시간이 다됐을 경우
-						//PRINT_LOG( "스킬 사용 종료" );
-						user->SetStronger( false );
-						user->SetSkillDuration( 0 );
+					Packet::SkillEnd skillend( user->GetId() );
 
-						Packet::SkillEnd skillend( user->GetId() );
+					RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
+					if ( !room )
+					{
+						PRINT_LOG( "room == nullptr" );
+					}
+					auto& players = room->GetPlayers();
 
-						RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
-						if ( !room )
-						{
-							PRINT_LOG( "room == nullptr" );
-						}
-						auto& players = room->GetPlayers();
+					for ( const auto& p : players )
+					{
+						UserManager::GetInstance().GetUsers()[ p ]->SendPacket( skillend );
+					}
 
-						for ( const auto& p : players )
-						{
-							UserManager::GetInstance().GetUsers()[ p ]->SendPacket( skillend );
-						}
-					} );
+				} );
+			}
+
+			else if ( user->GetPlayerState() == EPlayerState::STUN )
+			{
+				UserManager::GetInstance().PushTask(
+				[ index, time, roomNum ]()
+				{
+					PlayerUnit* user = UserManager::GetInstance().GetUser( index );
+					if ( !user )
+						return;
+
+					if ( user->GetStunDuration() != InitPlayer::STUNDURATION )
+					{
+						user->SetStunDuration( user->GetStunDuration() + 1 );
+						return;
+					}
+					user->SetPlayerState( EPlayerState::NORMAL );
+					user->SetStunDuration( 0 );
+
+					Packet::StunEnd stunend( user->GetId() );
+
+					RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
+					if ( !room )
+					{
+						PRINT_LOG( "room == nullptr" );
+					}
+					auto& players = room->GetPlayers();
+
+					for ( const auto& p : players )
+					{
+						UserManager::GetInstance().GetUsers()[ p ]->SendPacket( stunend );
+					}
+				} );
 			}
 
 			UserManager::GetInstance().PushTask(
@@ -133,10 +167,6 @@ void RoomManager::UpdateRoomTimer()
 		if ( time == InitWorld::ENDGAMETIME + InitWorld::STARTGAMEDELAY )
 		{
 			// 게임 종료
-			// 타이머에서 해당 방 삭제, 게임 종료 패킷 각 플레이어들에게 전송
-			// room->SetTime( 0 );
-			// m_deleteRoomTimers.emplace_back( roomNum );
-
 			Packet::EndGame finalinfo;
 			int count = 0;
 
@@ -151,7 +181,6 @@ void RoomManager::UpdateRoomTimer()
 				finalinfo.playerInfo[ count++ ].score = user->GetScore();				
 			}
 
-	
 			UserManager::GetInstance().PushTask(
 			[ finalinfo, players ]()
 			{
@@ -160,6 +189,8 @@ void RoomManager::UpdateRoomTimer()
 					//게임 종료 및 결과 패킷 전송
 					//봉인
 					PlayerUnit* player = UserManager::GetInstance().GetUser( index );
+					player->SetClientState( EClientState::GAMEFINISH );
+					player->SetPlayerState( EPlayerState::NORMAL );
 					player->SendPacket( finalinfo );
 					int bestScore = player->GetBestScore();
 					int currentScore = player->GetScore();
@@ -170,8 +201,15 @@ void RoomManager::UpdateRoomTimer()
 					}
 				}
 			} );
+			PRINT_LOG( "게임 종료 시간 도달 - 게임 종료 패킷 전송" );
+		}
 
-			PRINT_LOG( "게임 종료 시간 도달" );
+		if ( time == InitWorld::ENDGAMETIME + InitWorld::STARTGAMEDELAY + InitWorld::AUTOQUIT )
+		{
+			// 타이머에서 해당 방 삭제, 게임 종료 패킷 각 플레이어들에게 전송
+			room->SetTime( 0 );
+			m_deleteRoomTimers.emplace_back( roomNum );
+			PRINT_LOG( "게임 오토 종료 도달" );
 		}
 	}
 

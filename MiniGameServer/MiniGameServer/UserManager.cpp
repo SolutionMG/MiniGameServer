@@ -127,7 +127,7 @@ void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 		player->SetName( DataBaseManager::GetInstance().DecodingString( data.name ) );
 		player->SetBestScore( bestScore );
 		player->SendPacket( send );
-		player->SetState( EClientState::LOGON );
+		player->SetClientState( EClientState::LOGON );
 		PRINT_LOG( "로그인 성공" );
 		return;
 	}
@@ -196,7 +196,9 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		return;
 	}
 
-	//검증
+	if ( player->GetClientState() != EClientState::GAME )
+		return;
+
 	Position previousPos = player->GetPosition();
 	Position currentPos = Position( send.x, send.y );
 
@@ -250,9 +252,23 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	// 플레이어 간 충돌
 	{
 		Packet::CollisionPlayer cp;
+		Packet::StunStart stunStart;
+
 		cp.owners[ 0 ] = player->GetId();
 		int count = 1;
 		bool collision = false;
+		bool strongerExist = false;
+
+		if ( player->GetPlayerState() == EPlayerState::STRONGER )
+		{
+			cp.strongers[ 0 ] = player->GetId();
+			strongerExist = true;
+		}
+		else
+		{
+			stunStart.owners[0] = player->GetId();
+		}
+
 		for ( const auto& index : players )
 		{
 			if ( index == socket )
@@ -271,14 +287,19 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 				if ( count < 1 || count > 2 )
 					continue;
 
-				cp.owners[ count++ ] = m_users[ index ]->GetId();
+				cp.owners[ count ] = m_users[ index ]->GetId();
 
-				if ( m_users[ index ]->GetStronger() )
+				if ( m_users[ index ]->GetPlayerState() == EPlayerState::STRONGER )
 				{
-					m_users[ index ]->SetStronger( false );
-					m_users[ index ]->SetSkillDuration( 0 );
+					strongerExist = true;
+					cp.strongers[ count ] = m_users[ index ]->GetId();
+				}
+				else
+				{
+					stunStart.owners[count] = m_users[ index ]->GetId();
 				}
 
+				++count;
 				// 1 빨강 2 파랑 3 노랑
 				// std::cout << "!!!!!!!!" << player->GetColor() << "색상 플레이어와 " << m_users[ index ]->GetColor() << "색상 플레이어 충돌 발생!!!!!!!!" << std::endl;
 
@@ -288,14 +309,35 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		// 본인과 다른 플레이어 간 충돌 사실 전달
 		if ( collision )
 		{
-			if ( player->GetStronger() )
+			if ( player->GetPlayerState() == EPlayerState::STRONGER )
 			{
-				player->SetStronger( false );
+				player->SetPlayerState( EPlayerState::NORMAL );
 				player->SetSkillDuration( 0 );
 			}
+
 			for ( const auto& index : players )
 			{
+				//스턴 정보 전송
+				if ( strongerExist )
+				{
+					if ( m_users[ index ]->GetPlayerState() == EPlayerState::STRONGER )
+					{
+						m_users[ index ]->SetPlayerState( EPlayerState::NORMAL );
+						m_users[ index ]->SetSkillDuration( 0 );
+					}
+					else
+					{
+						m_users[ index ]->SetPlayerState( EPlayerState::STUN );
+					}
+					m_users[ index ]->SendPacket( stunStart );
+
+					PRINT_LOG( "스턴 발생" );
+				}
+
+				// 충돌 정보 전송
 				m_users[ index ]->SendPacket( cp );
+
+				
 			}
 		}
 	}
@@ -373,7 +415,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 
 						// mp정보 갱신
 						unsigned char mp = player->GetMp();
-						if ( mp != InitPlayer::SKILLENABLE && !player->GetStronger() )
+						if ( mp != InitPlayer::SKILLENABLE && player->GetPlayerState() != EPlayerState::STRONGER )
 						{
 							mp = min( mp + InitPlayer::MPCOUNT, InitPlayer::SKILLENABLE );
 							player->SetMp( mp );
@@ -445,7 +487,7 @@ void UserManager::ProcessSkill( const SOCKET& socket, char* packet )
 		result.info.type = ServerToClient::SKILLUSE_REQUEST_SUCCESS;
 
 		player->SetMp(0);
-		player->SetStronger( true );
+		player->SetPlayerState( EPlayerState::STRONGER );
 
 		for (const auto& player : room->GetPlayers() )
 		{
@@ -505,7 +547,7 @@ void UserManager::ProcessMatchingRequest( const SOCKET& socket, char* packet )
 		UserManager::GetInstance().PushTask(
 		[ socket, roomNum ]()
 		{
-			UserManager::GetInstance().GetUser( socket )->SetState( EClientState::MATCHING );
+			UserManager::GetInstance().GetUser( socket )->SetClientState( EClientState::MATCHING );
 			UserManager::GetInstance().GetUser( socket )->SetRoomNumber( roomNum );
 		} );
 
@@ -532,7 +574,7 @@ void UserManager::ProcessMatchingRequest( const SOCKET& socket, char* packet )
 					count = 1;
 					for ( const auto& other : others )
 					{
-						users[ player ]->SetState( EClientState::GAME );
+						users[ player ]->SetClientState( EClientState::GAME );
 						// 인게임 플레이어 초기화 정보 클라이언트에게 보내기
 						Packet::InitPlayers packet( users[ other ]->GetId() );
 						packet.color = count;
@@ -591,11 +633,11 @@ void UserManager::ProcessQuitRoom( const SOCKET& socket, char* packet )
 
 	int id = user->GetId();
 	int roomNum = user->GetRoomNum();
-	EClientState state = user->GetState();
+	EClientState state = user->GetClientState();
 
-	if ( state != EClientState::GAME )
+	if ( state != EClientState::GAMEFINISH )
 	{
-		PRINT_LOG( "게임 룸 속 유저가 아닙니다." );
+		PRINT_LOG( "게임 룸 속 게임이 종료된 유저가 아닙니다." );
 		return;
 	}
 
@@ -622,15 +664,18 @@ void UserManager::ProcessQuitRoom( const SOCKET& socket, char* packet )
 		[ socket ]()
 		{
 			PlayerUnit* user = UserManager::GetInstance().GetUser( socket );
-			user->SetState( EClientState::LOGON );
+			user->SetClientState( EClientState::LOGON );
 			user->SetRoomNumber( -1 );
 			user->SetScore( 1 );
 			user->SetPosition( Position( 0.f, 0.f ) );
 			user->SetMp( 0 );
-			user->SetStronger( false );
+			user->SetPlayerState( EPlayerState::NORMAL);
 			user->SetSkillDuration( 0 );
+			user->SetStunDuration( 0 );
 		} );
 	} );
+	PRINT_LOG( "QuitRoom 패킷 - 방 나가기 완료" );
+
 }
 
 void UserManager::DeleteUser( const SOCKET& socket )
