@@ -46,7 +46,6 @@ namespace InitWorld
 	// 게임 종료 시간
 	constexpr unsigned char ENDGAMETIME		= 60; /* 실제 게임 시간 = 60초, 게임 시작 후 정지 시간 6초*/
 	constexpr unsigned char STARTGAMEDELAY	= 6;
-	constexpr unsigned char	AUTOQUIT		= 5; /* 자동 나가기 */
 
 	// 벽 정보
 	constexpr float MINIMUM_X = FIRST_TILEPOSITION_X - 25.f;

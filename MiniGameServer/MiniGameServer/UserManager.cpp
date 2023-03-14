@@ -513,7 +513,7 @@ void UserManager::ProcessSkill( const SOCKET& socket, char* packet )
 			{
 
 				PlayerUnit* player = UserManager::GetInstance().GetUser( socket );
-				Packet::SkillUseResult result( player->GetId(), ServerToClient::SKILLUSE_REQUEST_FAILED );
+				Packet::SkillUseResult result( player->GetId(), ServerToClient::SKILLUSE_REQUEST_SUCCESS );
 				player->SetMp( 0 );
 				player->SetPlayerState( EPlayerState::STRONGER );
 
@@ -522,7 +522,7 @@ void UserManager::ProcessSkill( const SOCKET& socket, char* packet )
 					UserManager::GetInstance().GetUser(player)->SendPacket(result);
 				}
 
-				//PRINT_LOG( "스킬 사용 승인 패킷 전송" );
+				PRINT_LOG( "스킬 사용 승인 패킷 전송" );
 			} );
 		} );
 

@@ -85,7 +85,7 @@ void RoomManager::UpdateRoomTimer()
 		unsigned char time = room->GetTime();
 		room->SetTime( ++time );
 
-		std::cout << static_cast<int>(time) << std::endl;
+		//std::cout << static_cast<int>(time) << std::endl;
 
 		//각 방의 플레이어들에게 타이머 Send
 		auto& players = room->GetPlayers();
@@ -152,6 +152,8 @@ void RoomManager::UpdateRoomTimer()
 		if ( time == InitWorld::ENDGAMETIME + InitWorld::STARTGAMEDELAY )
 		{
 			// 게임 종료
+			// 타이머에서 더이상 해당 방 갱신 X
+
 			UserManager::GetInstance().PushTask(
 			[ players ]()
 			{
@@ -185,15 +187,10 @@ void RoomManager::UpdateRoomTimer()
 						DataBaseManager::GetInstance().BestScoreUpdate( player->GetName(), currentScore );
 					}
 				}
-			} );
-			PRINT_LOG( "게임 종료 시간 도달 - 게임 종료 패킷 전송" );
-		}
 
-		if ( time == InitWorld::ENDGAMETIME + InitWorld::STARTGAMEDELAY + InitWorld::AUTOQUIT )
-		{
-			// 타이머에서 더이상 해당 방 갱신 X
+			} );
 			room->SetTime( 0 );
-			PRINT_LOG( "게임 오토 종료 도달" );
+			PRINT_LOG( "게임 종료 시간 도달 - 게임 종료 패킷 전송" );
 		}
 		else
 		{
