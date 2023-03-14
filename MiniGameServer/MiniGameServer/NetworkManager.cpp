@@ -35,8 +35,8 @@ bool NetworkManager::Initialize( )
 	}
 
 	// Nagle Off Option
-	int socketOption = 1;
-	returnValue = setsockopt( m_listenSocket, SOL_SOCKET, TCP_NODELAY, reinterpret_cast< const char* >( &socketOption ), sizeof( socketOption ) );
+	const char socketOption = 1;
+	returnValue = setsockopt( m_listenSocket, SOL_SOCKET, TCP_NODELAY,  &socketOption, sizeof( socketOption ) );
 	if ( returnValue != 0 )
 	{
 		PRINT_LOG( "setsockopt Initialize() failed" );
@@ -117,7 +117,7 @@ bool NetworkManager::RunServer( )
 	return true;
 }
 
-void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const SOCKET& socket )
+void NetworkManager::ReassemblePacket( char* packet, const DWORD bytes, const SOCKET socket )
 {
 	if ( packet == nullptr || bytes == 0 )
 	{
@@ -136,7 +136,7 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 		PlayerUnit* user = UserManager::GetInstance( ).GetUser( socket );
 		if ( !user )
 			return;
-		int startReceive = user->GetPreviousReceivePosition( );
+		const int startReceive = user->GetPreviousReceivePosition( );
 		int byte = bytes;
 
 		while(byte > 0 )
@@ -172,7 +172,7 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD& bytes, const S
 	
 }
 
-void NetworkManager::Disconnect( const SOCKET& socket )
+void NetworkManager::Disconnect( const SOCKET socket )
 {
 	//방에서 종료한 플레이어 삭제
 	RoomManager::GetInstance().PushTask(
@@ -186,31 +186,32 @@ void NetworkManager::Disconnect( const SOCKET& socket )
 				return;
 			}
 
-			int id = user->GetId();
-			int roomNum = user->GetRoomNum();
-			EClientState state = user->GetClientState();
+			const int id = user->GetId();
+			const int roomNum = user->GetRoomNum();
+			const EClientState state = user->GetClientState();
 
 			//접속 종료 플레이어 유저 관리 객체에서 삭제
 			UserManager::GetInstance().PushTask(
-				[ socket ]()
+			[ socket ]()
+			{
+				// 같은 방 사람들에게 플레이어 종료 정보 전송 
+
+				//유저객체 유저풀에 전달
+				PlayerUnit* user = UserManager::GetInstance().GetUser( socket );
+				if ( !user )
 				{
-					// 같은 방 사람들에게 플레이어 종료 정보 전송 
+					PRINT_LOG( "user == nullptr" );
+					return;
+				}
+				std::cout << user->GetSocket() << " 유저 접속 종료" << std::endl;
 
-					//유저객체 유저풀에 전달
-					PlayerUnit* user = UserManager::GetInstance().GetUser( socket );
-					if ( !user )
-					{
-						PRINT_LOG( "user == nullptr" );
-						return;
-					}
-					std::cout << user->GetSocket() << " 유저 접속 종료" << std::endl;
-
-					UserManager::GetInstance().PushPlayerUnit( user );
-					UserManager::GetInstance().PushPlayerId( user->GetId() );
-					UserManager::GetInstance().DeleteUser( socket );
-				} );
-
-			if ( state < EClientState::MATCHING || state >  EClientState::GAME )
+				UserManager::GetInstance().PushPlayerUnit( user );
+				UserManager::GetInstance().PushPlayerId( user->GetId() );
+				UserManager::GetInstance().DeleteUser( socket );
+			} );
+			
+			//매칭 중이지 않거나, 게임 중 혹은 게임 종료 한 플레이어의 경우 방 객체에 불필요하게 접근하지 않습니다.
+			if ( state < EClientState::MATCHING || state >  EClientState::GAMEFINISH )
 			{
 				return;
 			}
@@ -242,7 +243,7 @@ bool NetworkManager::Accept( WSAOVERLAPPED_EXTEND* over )
 		return false;
 	}
 
-	int socketOption = 1;
+	const int socketOption = 1;
 	int returnValue = setsockopt( socket, SOL_SOCKET, TCP_NODELAY, reinterpret_cast< const char* >( &socketOption ), sizeof( socketOption ) );
 	if ( returnValue != 0 )
 	{

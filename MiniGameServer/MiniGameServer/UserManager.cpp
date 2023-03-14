@@ -43,7 +43,7 @@ UserManager::~UserManager( )
 	}
 }
 
-void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
+void UserManager::ProcessPacket( const SOCKET socket, char* packet )
 {
 	if ( !packet )
 	{
@@ -69,15 +69,15 @@ void UserManager::ProcessPacket( const SOCKET& socket, char* packet )
 void UserManager::AddProcess( )
 {
 	m_processFunctions.reserve( 10 );
-	m_processFunctions.emplace( std::make_pair( ClientToServer::LOGIN_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessLoginRequest( socket, packet ); } ) ));
-	m_processFunctions.emplace( std::make_pair( ClientToServer::SIGNUP_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessSignupRequest( socket, packet ); } ) ) );
-	m_processFunctions.emplace( std::make_pair( ClientToServer::MOVE, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessMove( socket, packet ); } ) ) );
-	m_processFunctions.emplace( std::make_pair( ClientToServer::SKILLUSE_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessSkill( socket, packet ); } ) ) );
-	m_processFunctions.emplace( std::make_pair( ClientToServer::MATHCING_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessMatchingRequest( socket, packet ); } ) ) );
-	m_processFunctions.emplace( std::make_pair( ClientToServer::QUIT_ROOM, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void { return ProcessQuitRoom( socket, packet ); } ) ) );
+	m_processFunctions.emplace( std::make_pair( ClientToServer::LOGIN_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void		{ return ProcessLoginRequest( socket, packet ); } ) ));
+	m_processFunctions.emplace( std::make_pair( ClientToServer::SIGNUP_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void		{ return ProcessSignupRequest( socket, packet ); } ) ) );
+	m_processFunctions.emplace( std::make_pair( ClientToServer::MOVE, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void				{ return ProcessMove( socket, packet ); } ) ) );
+	m_processFunctions.emplace( std::make_pair( ClientToServer::SKILLUSE_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void	{ return ProcessSkill( socket, packet ); } ) ) );
+	m_processFunctions.emplace( std::make_pair( ClientToServer::MATHCING_REQUEST, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void	{ return ProcessMatchingRequest( socket, packet ); } ) ) );
+	m_processFunctions.emplace( std::make_pair( ClientToServer::QUIT_ROOM, std::function( [ & ]( const SOCKET& socket, char* packet ) -> void			{ return ProcessQuitRoom( socket, packet ); } ) ) );
 }
 
-void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
+void UserManager::ProcessLoginRequest( const SOCKET socket, char* packet )
 {
 	// 로그인 요청 
 	if ( !packet )
@@ -102,7 +102,7 @@ void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 		return;
 	}
 
-	int id = player->GetId();
+	const int id = player->GetId();
 	int bestScore = 0;
 	Packet::LoginResult send( id, ServerToClient::LOGON_FAILED );
 
@@ -137,7 +137,7 @@ void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 
 }
 
-void UserManager::ProcessSignupRequest( const SOCKET& socket, char* packet )
+void UserManager::ProcessSignupRequest( const SOCKET socket, char* packet )
 {
 	// 회원가입 요청
 	if ( !packet )
@@ -146,7 +146,7 @@ void UserManager::ProcessSignupRequest( const SOCKET& socket, char* packet )
 		return;
 	}
 
-	Packet::SignUpRequest data = *reinterpret_cast< Packet::SignUpRequest* > ( packet );
+	const Packet::SignUpRequest data = *reinterpret_cast< Packet::SignUpRequest* > ( packet );
 
 	if ( m_users.find( socket ) == m_users.end() )
 	{
@@ -172,12 +172,12 @@ void UserManager::ProcessSignupRequest( const SOCKET& socket, char* packet )
 		PRINT_LOG( "회원가입 성공" );
 		return;
 	}
+#endif
 	player->SendPacket( result );
 	PRINT_LOG( "회원가입 실패" );
-#endif
 }
 
-void UserManager::ProcessMove( const SOCKET& socket, char* packet )
+void UserManager::ProcessMove( const SOCKET socket, char* packet )
 {
 	Packet::Move send = *reinterpret_cast< Packet::Move* > ( packet );
 	send.info.type = ServerToClient::MOVE;
@@ -212,7 +212,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	}
 
 	player->SetPosition( currentPos );
-	const int   roomNum = player->GetRoomNum();
+	const int roomNum = player->GetRoomNum();
 
 	RoomManager::GetInstance().PushTask(
 	[ roomNum, socket, send, currentPos ]()
@@ -240,7 +240,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 			// 이동
 			{
 				// 같은 방에 있는 플레이어들에게 정보 전송
-				for ( const auto& index : players )
+				for ( const auto index : players )
 				{
 					if ( index == socket )
 						continue;
@@ -283,7 +283,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 					stunStart.owners[ 0 ] = player->GetId();
 				}
 
-				for ( const auto& index : players )
+				for ( const auto index : players )
 				{
 					if ( index == socket )
 						continue;
@@ -329,7 +329,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 						player->SetSkillDuration( 0 );
 					}
 
-					for ( const auto& index : players )
+					for ( const auto index : players )
 					{
 						//스턴 정보 전송
 						if ( strongerExist )
@@ -360,9 +360,9 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 
 			// 발판 충돌
 			{
-				int xIndex = static_cast< int >( ( currentPos.x - ( InitWorld::FIRST_TILEPOSITION_X - InitWorld::TILEWITHGAP_SIZE / 2.f ) ) / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 X인덱스
-				int yIndex = static_cast< int >( ( currentPos.y - ( InitWorld::FIRST_TILEPOSITION_Y - InitWorld::TILEWITHGAP_SIZE / 2.f ) ) / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 Y인덱스
-				int blockIndex = xIndex + ( yIndex * InitWorld::TILE_COUNTX );
+				const int xIndex = static_cast< int >( ( currentPos.x - ( InitWorld::FIRST_TILEPOSITION_X - InitWorld::TILEWITHGAP_SIZE / 2.f ) ) / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 X인덱스
+				const int yIndex = static_cast< int >( ( currentPos.y - ( InitWorld::FIRST_TILEPOSITION_Y - InitWorld::TILEWITHGAP_SIZE / 2.f ) ) / ( InitWorld::TILEWITHGAP_SIZE ) ); //타일의 Y인덱스
+				const int blockIndex = xIndex + ( yIndex * InitWorld::TILE_COUNTX );
 
 				if ( blockIndex < 0 || blockIndex > 48 )
 				{
@@ -383,7 +383,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 							return;
 						}
 
-						Tile tile = room->GetTile( blockIndex );
+						const Tile tile = room->GetTile( blockIndex );
 						const short beforeColor = tile.color;
 						if ( beforeColor == color )
 							return;
@@ -441,15 +441,15 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 								}
 
 								// 발판 충돌 플레이어 점수 상승
-								unsigned char newPlayerScore = player->GetScore() + 1;
+								const unsigned char newPlayerScore = player->GetScore() + 1;
 
 								player->SetScore( newPlayerScore );
 
-								Packet::Score upScore( player->GetId(), newPlayerScore );
-								Packet::Score downScore( basePlayer, basePlayerScore );
+								const Packet::Score upScore( player->GetId(), newPlayerScore );
+								const Packet::Score downScore( basePlayer, basePlayerScore );
 
 								// 같은 방에 있는 플레이어들에게 정보 전송
-								for ( const auto& index : players )
+								for ( const auto index : players )
 								{
 									// 충돌 정보 전송
 									Packet::CollisionTile collisionPacket = Packet::CollisionTile( player->GetId(), blockIndex );
@@ -474,9 +474,9 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	
 }
 
-void UserManager::ProcessSkill( const SOCKET& socket, char* packet )
+void UserManager::ProcessSkill( const SOCKET socket, char* packet )
 {
-	Packet::SkillUseRequest send = *reinterpret_cast< Packet::SkillUseRequest* > ( packet );
+	//const Packet::SkillUseRequest send = *reinterpret_cast< Packet::SkillUseRequest* > ( packet );
 
 	if ( m_users.find( socket ) == m_users.end() )
 	{
@@ -491,7 +491,7 @@ void UserManager::ProcessSkill( const SOCKET& socket, char* packet )
 		PRINT_LOG( "존재하지 않는 유저 입니다." );
 		return;
 	}
-	Packet::SkillUseResult result(player->GetId(), ServerToClient::SKILLUSE_REQUEST_FAILED);
+	const Packet::SkillUseResult result(player->GetId(), ServerToClient::SKILLUSE_REQUEST_FAILED);
 
 	//PRINT_LOG( "스킬 사용 요청 패킷 송신" );
 	if ( player->GetMp() == InitPlayer::SKILLENABLE )
@@ -513,13 +513,13 @@ void UserManager::ProcessSkill( const SOCKET& socket, char* packet )
 			{
 
 				PlayerUnit* player = UserManager::GetInstance().GetUser( socket );
-				Packet::SkillUseResult result( player->GetId(), ServerToClient::SKILLUSE_REQUEST_SUCCESS );
+				const Packet::SkillUseResult result( player->GetId(), ServerToClient::SKILLUSE_REQUEST_SUCCESS );
 				player->SetMp( 0 );
 				player->SetPlayerState( EPlayerState::STRONGER );
 
-				for ( const auto& player : players )
+				for ( const auto index : players )
 				{
-					UserManager::GetInstance().GetUser(player)->SendPacket(result);
+					UserManager::GetInstance().GetUser( index )->SendPacket(result);
 				}
 
 				PRINT_LOG( "스킬 사용 승인 패킷 전송" );
@@ -534,9 +534,9 @@ void UserManager::ProcessSkill( const SOCKET& socket, char* packet )
 	//PRINT_LOG( "스킬 사용 불허 패킷 전송" );
 }
 
-void UserManager::ProcessMatchingRequest( const SOCKET& socket, char* packet )
+void UserManager::ProcessMatchingRequest( const SOCKET socket, char* packet )
 {
-	Packet::MatchingRequest send = *reinterpret_cast< Packet::MatchingRequest* > ( packet );
+	//const Packet::MatchingRequest send = *reinterpret_cast< Packet::MatchingRequest* > ( packet );
 
 	// 플레이어 로그인 후 3명 존재 시 바로 게임으로 넘어가도록
 	// 방으로 이동
@@ -599,17 +599,17 @@ void UserManager::ProcessMatchingRequest( const SOCKET& socket, char* packet )
 					return;
 				}
 				int count = 1;
-				for ( const auto& player : others )
+				for ( const auto index : others )
 				{
 					count = 1;
 					for ( const auto& other : others )
 					{
-						users[ player ]->SetClientState( EClientState::GAME );
+						users[ index ]->SetClientState( EClientState::GAME );
 						// 인게임 플레이어 초기화 정보 클라이언트에게 보내기
 						Packet::InitPlayers packet( users[ other ]->GetId() );
 						packet.color = count;
 
-						Position pos = Position( InitPlayer::INITPOSITION_X[ count - 1 ], InitPlayer::INITPOSITION_Y[ count - 1 ] );
+						const Position pos = Position( InitPlayer::INITPOSITION_X[ count - 1 ], InitPlayer::INITPOSITION_Y[ count - 1 ] );
 						//위치 수정하기
 						packet.x = pos.x;
 						packet.y = pos.y;
@@ -619,11 +619,11 @@ void UserManager::ProcessMatchingRequest( const SOCKET& socket, char* packet )
 
 						users[ other ]->SetPosition( pos );
 						users[ other ]->SetColor( count );
-						users[ player ]->SendPacket( packet );
+						users[ index ]->SendPacket( packet );
 
 						//초기 시작 타일 색 전송
 						Packet::CollisionTile tile( packet.owner, InitWorld::FIRSTTILE_INDEX[ count - 1 ] );
-						users[ player ]->SendPacket( tile );
+						users[ index ]->SendPacket( tile );
 
 						++count;
 					}
@@ -649,7 +649,7 @@ void UserManager::ProcessMatchingRequest( const SOCKET& socket, char* packet )
 
 }
 
-void UserManager::ProcessQuitRoom( const SOCKET& socket, char* packet )
+void UserManager::ProcessQuitRoom( const SOCKET socket, char* packet )
 {
 	Packet::QuitRoom send = *reinterpret_cast< Packet::QuitRoom* > ( packet );
 
@@ -708,7 +708,7 @@ void UserManager::ProcessQuitRoom( const SOCKET& socket, char* packet )
 
 }
 
-void UserManager::DeleteUser( const SOCKET& socket )
+void UserManager::DeleteUser( const SOCKET socket )
 {
 	m_users.erase( socket );
 }
@@ -722,14 +722,14 @@ void UserManager::PushPlayerUnit( PlayerUnit* player )
 	m_userPools.push( player );
 }
 
-void UserManager::PushPlayerId( const int& id )
+void UserManager::PushPlayerId( const int id )
 {
 	if ( id < 0 )
 		return;
 	m_pIdPools.push( id );
 }
 
-PlayerUnit* UserManager::GetUser( const SOCKET& socket )
+PlayerUnit* UserManager::GetUser( const SOCKET socket )
 {
 	if ( m_users.find( socket ) == m_users.end() )
 		return nullptr;

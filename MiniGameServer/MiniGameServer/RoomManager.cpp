@@ -63,7 +63,7 @@ void RoomManager::UpdateRoomTimer()
 	RoomTimer timer;
 	while( m_updateRoomTimers.try_pop( timer ))
 	{
-		int roomNum = timer.roomNum;
+		const int roomNum = timer.roomNum;
 		if ( m_rooms.find( roomNum ) == m_rooms.end() )
 			continue;
 
@@ -89,7 +89,7 @@ void RoomManager::UpdateRoomTimer()
 
 		//각 방의 플레이어들에게 타이머 Send
 		auto& players = room->GetPlayers();
-		Packet::Timer timePacket( time );
+		const Packet::Timer timePacket( time );
 
 		for ( auto& index : players )
 		{			
@@ -114,7 +114,7 @@ void RoomManager::UpdateRoomTimer()
 					user->SetPlayerState( EPlayerState::NORMAL );
 					user->SetSkillDuration( 0 );
 
-					Packet::SkillEnd skillend( user->GetId() );
+					const Packet::SkillEnd skillend( user->GetId() );
 
 					for ( const auto& p : players )
 					{
@@ -132,7 +132,7 @@ void RoomManager::UpdateRoomTimer()
 					user->SetPlayerState( EPlayerState::NORMAL );
 					user->SetStunDuration( 0 );
 
-					Packet::StunEnd stunend( user->GetId() );
+					const Packet::StunEnd stunend( user->GetId() );
 
 					for ( const auto& p : players )
 					{
@@ -160,7 +160,7 @@ void RoomManager::UpdateRoomTimer()
 				Packet::EndGame finalinfo;
 				int count = 0;
 
-				for ( const auto& index : players )
+				for ( const auto index : players )
 				{
 					PlayerUnit* user = UserManager::GetInstance().GetUser( index );
 					if ( !user )
@@ -171,7 +171,7 @@ void RoomManager::UpdateRoomTimer()
 					finalinfo.playerInfo[ count++ ].score = user->GetScore();
 				}
 
-				for ( const auto& index : players )
+				for ( const auto index : players )
 				{
 					//게임 종료 및 결과 패킷 전송
 					//봉인
@@ -207,12 +207,12 @@ void RoomManager::UpdateRoomTimer()
 	m_pushUpdateTimers.clear();
 }
 
-void RoomManager::PushRoomNumber( const int& number )
+void RoomManager::PushRoomNumber( const int number )
 {
 	m_roomNumberPools.push( number );
 }
 
-void RoomManager::PushTimer( const int& roomNum )
+void RoomManager::PushTimer( const int roomNum )
 {
 	RoomTimer timer( roomNum, std::chrono::system_clock::now() + std::chrono::milliseconds( 1000 - InitServer::UPDATE_AWAKE_MS ) );
 	m_updateRoomTimers.push( timer );
@@ -237,7 +237,7 @@ RoomUnit* RoomManager::GetRoomUnitFromPools()
 	return room;
 }
 
-RoomUnit* RoomManager::GetRoom( const int& index )
+RoomUnit* RoomManager::GetRoom( const int index )
 {
 	if ( m_rooms.find( index ) == m_rooms.end() )
 	{
@@ -256,7 +256,7 @@ const int RoomManager::GetNewRoomNumber( )
 	return room;
 }
 
-void RoomManager::DeleteRoom( const int& index )
+void RoomManager::DeleteRoom( const int index )
 {
 	m_rooms.erase( index );
 }

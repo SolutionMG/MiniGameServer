@@ -2,7 +2,7 @@
 #include "ClientUnit.h"
 #include "OverlappedManager.h"
 
-ClientUnit::ClientUnit( const SOCKET& socket )
+ClientUnit::ClientUnit( const SOCKET socket )
 	: m_socket( socket )
 	, m_over()
 	, m_clientState( EClientState::DISCONNECT )

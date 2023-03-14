@@ -208,7 +208,7 @@ bool DataBaseManager::LogOn( const std::string& name, const std::string& passwor
 	return returnValue;
 }
 
-bool DataBaseManager::BestScoreUpdate( const std::string& name, const int& bestScore )
+bool DataBaseManager::BestScoreUpdate( const std::string& name, const int bestScore )
 {
 	std::string encodeName = EncodingString( name );
 

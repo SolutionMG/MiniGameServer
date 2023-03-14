@@ -51,9 +51,9 @@ public:
 
 	// Set
 	// 방 번호를 방 번호 풀링 객체에 반환
-	void PushRoomNumber(const int& number);
+	void PushRoomNumber(const int number);
 	// 해당 방의 타이머 갱신
-	void PushTimer(const int& roomNum);
+	void PushTimer(const int roomNum);
 	// 방 객체 풀링 컨테이너에 게임 종료 방 반환
 	void PushRoom( RoomUnit* room );
 
@@ -66,13 +66,13 @@ public:
 	RoomUnit* GetRoomUnitFromPools();
 	
 	// 방 관리 객체 반환
-	RoomUnit* GetRoom( const int& index );
+	RoomUnit* GetRoom( const int index );
 
 	std::unordered_map<int, RoomUnit*>& GetRooms() { return m_rooms; }
 	const int GetNewRoomNumber();
 
 	//방 삭제
-	void DeleteRoom( const int& index );
+	void DeleteRoom( const int index );
 };
 
 #endif
