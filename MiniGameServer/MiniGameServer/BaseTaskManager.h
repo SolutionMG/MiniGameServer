@@ -21,10 +21,10 @@ protected:
 	virtual const std::string GetName( )	const  noexcept = 0;
 	virtual const int GetAwakeInterval( )	const  noexcept = 0;
 
-private:
+protected:
 	void WorkTask( );
 
-private:
+protected:
 	concurrency::concurrent_queue< Task >	m_taskQueue;
 	std::jthread							m_taskThread;
 };

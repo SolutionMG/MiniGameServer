@@ -105,7 +105,6 @@ bool NetworkManager::RunServer( )
 #endif
 	UserManager::GetInstance().Run();
 	RoomManager::GetInstance().Run();
-	RoomManager::GetInstance().RunTimer();
 
 	for ( auto& wthread : workerThreads )
 	{

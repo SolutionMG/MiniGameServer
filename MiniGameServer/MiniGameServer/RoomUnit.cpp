@@ -2,7 +2,7 @@
 #include "RoomUnit.h"
 
 RoomUnit::RoomUnit()
-	:m_time( 0 ), m_roomState(RoomState::END)
+	:m_time( 0 ), m_roomState( RoomState::END )
 {
 	m_players.reserve( InitWorld::INGAMEPLAYER_NUM );
 	m_blocks.reserve( InitWorld::TILE_COUNTX * InitWorld::TILE_COUNTY );

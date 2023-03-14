@@ -108,10 +108,10 @@ void UserManager::ProcessLoginRequest( const SOCKET& socket, char* packet )
 
 #if NDEBUG
 	// 이미 로그인한 아이디 검사
-	for ( const auto& user : m_users )
+	for ( const auto& [ _, user ] : m_users )
 	{
 		std::string curName = DataBaseManager::GetInstance().DecodingString( data.name );
-		if ( user.second->GetName() == curName )
+		if ( user->GetName() == curName )
 		{
 			PRINT_LOG( "중복 로그인" );
 			send.info.type = ServerToClient::LOGIN_DUPLICATION;
@@ -212,16 +212,16 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 	}
 
 	player->SetPosition( currentPos );
-	const short color = player->GetColor();
+	const short color   = player->GetColor();
+	const int   roomNum = player->GetRoomNum();
 
-	int roomNum = player->GetRoomNum();
 	RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
-
 	if ( !room )
 	{
 		PRINT_LOG( "존재하지 않는 방입니다." );
 		return;
 	}
+
 	auto& players = room->GetPlayers();
 	// 이동
 	{
@@ -255,7 +255,7 @@ void UserManager::ProcessMove( const SOCKET& socket, char* packet )
 		Packet::StunStart stunStart;
 
 		cp.owners[ 0 ] = player->GetId();
-		int count = 1;
+		int count = 1; 
 		bool collision = false;
 		bool strongerExist = false;
 

@@ -10,6 +10,17 @@
 
 class RoomUnit;
 
+struct RoomTimer
+{
+	int roomNum;
+	std::chrono::system_clock::time_point requestTime;
+
+	constexpr bool operator < ( const RoomTimer& other ) const
+	{
+		return requestTime > other.requestTime;
+	}
+};
+
 class RoomManager final 
 	: public BaseTaskManager
 	, public Base::TSingleton< RoomManager >
@@ -24,9 +35,8 @@ private:
 
 
 	// 인게임 타이머를 보낼 방들
-	std::vector<int/*방 번호*/> m_updateRoomTimers;
-	// 인게임에서 삭제할 타이머
-	std::vector<int/*방 번호*/> m_deleteRoomTimers;
+	concurrency::concurrent_priority_queue<RoomTimer> m_updateRoomTimers;
+	std::vector<RoomTimer> m_pushUpdateTimers;
 
 	std::jthread m_timerThread;
 
@@ -34,8 +44,8 @@ public:
 	explicit RoomManager( );
 	virtual ~RoomManager();;
 
-	// 타이머 쓰레드 활성화
-	void RunTimer();
+	virtual void Run() override;
+
 	// 방 타이머 업데이트 
 	void UpdateRoomTimer();
 

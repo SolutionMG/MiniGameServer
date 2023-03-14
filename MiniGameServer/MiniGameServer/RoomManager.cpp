@@ -11,6 +11,7 @@ RoomManager::RoomManager()
 	:m_updateRoomTimers(), m_timerThread()
 {
 	m_rooms.reserve( InitServer::MAX_ROOMSIZE );
+	m_pushUpdateTimers.reserve( InitServer::MAX_ROOMSIZE );
 
 	for ( int i = 0; i < InitServer::MAX_ROOMSIZE; ++i )
 	{
@@ -27,7 +28,7 @@ RoomManager::RoomManager()
 
 RoomManager::~RoomManager()
 {
-	for ( auto& [index, room] : m_rooms )
+	for ( auto& [index, room ] : m_rooms )
 	{
 		delete room;
 		room = nullptr;
@@ -42,40 +43,49 @@ RoomManager::~RoomManager()
 	}
 }
 
-void RoomManager::RunTimer()
+void RoomManager::Run()
 {
-	//타이머 만들기
-	m_timerThread = static_cast< std::jthread >
-		( [ this ]( std::stop_token stoken )
+	m_taskThread = static_cast< std::jthread >
+	( [ this ]( std::stop_token stoken )
+	{
+		while ( !stoken.stop_requested() )
 		{
-			while ( !stoken.stop_requested() )
-			{
-				UpdateRoomTimer();
-				// 1초마다 작동하는 타이머
-				std::this_thread::sleep_for( static_cast< std::chrono::milliseconds >( 1000 ) );
-			}
-
-		} );	
+			WorkTask();
+			UpdateRoomTimer();
+			std::this_thread::sleep_for( static_cast< std::chrono::milliseconds >( InitServer::UPDATE_AWAKE_MS ) );
+		}
+	} );
 }
 
 void RoomManager::UpdateRoomTimer()
 {
 	// 각 플레이어에 시간 send
-	for(auto& roomNum : m_updateRoomTimers )
+	RoomTimer timer;
+	while( m_updateRoomTimers.try_pop( timer ))
 	{
+		int roomNum = timer.roomNum;
 		if ( m_rooms.find( roomNum ) == m_rooms.end() )
 			continue;
 
 		RoomUnit* room = m_rooms[ roomNum ];
+
 		if ( !room )
 		{
 			PRINT_LOG( "room == nullptr" );
-			m_deleteRoomTimers.emplace_back( roomNum );
+			continue;
+		}
+
+		if ( timer.requestTime /*요청시간*/ > std::chrono::system_clock::now()/*현재*/ )
+		{
+			m_pushUpdateTimers.emplace_back( timer );
+			PRINT_LOG( "1초가 지나지 않음" );
 			continue;
 		}
 
 		unsigned char time = room->GetTime();
 		room->SetTime( ++time );
+
+		std::cout << static_cast<int>(time) << std::endl;
 
 		//각 방의 플레이어들에게 타이머 Send
 		auto& players = room->GetPlayers();
@@ -206,21 +216,23 @@ void RoomManager::UpdateRoomTimer()
 
 		if ( time == InitWorld::ENDGAMETIME + InitWorld::STARTGAMEDELAY + InitWorld::AUTOQUIT )
 		{
-			// 타이머에서 해당 방 삭제, 게임 종료 패킷 각 플레이어들에게 전송
+			// 타이머에서 더이상 해당 방 갱신 X
 			room->SetTime( 0 );
-			m_deleteRoomTimers.emplace_back( roomNum );
 			PRINT_LOG( "게임 오토 종료 도달" );
+		}
+		else
+		{
+			//타이머 갱신
+			RoomTimer reUpdate( timer.roomNum, std::chrono::system_clock::now() + std::chrono::milliseconds( 1000 - InitServer::UPDATE_AWAKE_MS ) );
+			m_pushUpdateTimers.emplace_back( reUpdate );
 		}
 	}
 
-	// 100초가 넘었을 때 타이머에서 제거 (게임 종료)
-	for ( auto& roomNum : m_deleteRoomTimers )
+	for ( const auto& roomTimer : m_pushUpdateTimers )
 	{
-		std::erase_if( m_updateRoomTimers,
-			[ roomNum ]( const int& index )
-			{ return index == roomNum; });
+		m_updateRoomTimers.push( roomTimer );
 	}
-	m_deleteRoomTimers.clear();
+	m_pushUpdateTimers.clear();
 }
 
 void RoomManager::PushRoomNumber( const int& number )
@@ -230,7 +242,8 @@ void RoomManager::PushRoomNumber( const int& number )
 
 void RoomManager::PushTimer( const int& roomNum )
 {
-	m_updateRoomTimers.emplace_back( roomNum );
+	RoomTimer timer( roomNum, std::chrono::system_clock::now() + std::chrono::milliseconds( 1000 - InitServer::UPDATE_AWAKE_MS ) );
+	m_updateRoomTimers.push( timer );
 }
 
 void RoomManager::PushRoom( RoomUnit* room )
