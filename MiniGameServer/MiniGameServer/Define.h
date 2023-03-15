@@ -5,7 +5,7 @@ namespace InitServer
 {
 	constexpr unsigned short TOTALCORE = 8;
 	constexpr unsigned short SERVERPORT = 9000;
-	constexpr unsigned short MAX_PLAYERNUM = 99;
+	constexpr unsigned short MAX_PLAYERNUM = 999;
 
 	constexpr int UPDATE_AWAKE_MS = 50;
 

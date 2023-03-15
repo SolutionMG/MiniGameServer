@@ -325,6 +325,7 @@ void NetworkManager::MainWorkProcess( )
 				{
 					auto& users = UserManager::GetInstance().GetUsers();
 					const int userCount = static_cast< int >( users.size( ) );
+					//std::cout << userCount << std::endl;
 					if ( userCount <= InitServer::MAX_PLAYERNUM )
 					{
 						users[ userKey ] = UserManager::GetInstance().GetPlayerUnitFromPools();
