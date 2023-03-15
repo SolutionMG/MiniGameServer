@@ -602,9 +602,8 @@ void UserManager::ProcessMatchingRequest( const SOCKET socket, char* packet )
 				for ( const auto index : others )
 				{
 					count = 1;
-					for ( const auto& other : others )
+					for ( const auto other : others )
 					{
-						users[ index ]->SetClientState( EClientState::GAME );
 						// 인게임 플레이어 초기화 정보 클라이언트에게 보내기
 						Packet::InitPlayers packet( users[ other ]->GetId() );
 						packet.color = count;
@@ -630,6 +629,12 @@ void UserManager::ProcessMatchingRequest( const SOCKET socket, char* packet )
 				}
 
 				PRINT_LOG( "게임시작 패킷 전송 완료" );
+
+				for ( const auto index : others )
+				{
+					users[ index ]->SetClientState( EClientState::GAME );
+
+				}
 
 				RoomManager::GetInstance().PushTask(
 				[ roomNum ]()
