@@ -329,6 +329,8 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 						player->SetSkillDuration( 0 );
 					}
 
+					Packet::SkillEnd end[ 3 ]{cp.strongers[0], cp.strongers[1], cp.strongers[2]};
+
 					for ( const auto index : players )
 					{
 						//스턴 정보 전송
@@ -345,6 +347,16 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 								users[ index ]->SetStunDuration( 0 );
 
 							}
+							
+							//스킬 종료 정보 전송
+
+							for ( int i = 0; i < 3; ++i )
+							{
+								if ( end[ i ].owner == -1 )
+									continue;
+								users[ index ]->SendPacket( end[i]);
+							}
+							
 							users[ index ]->SendPacket( stunStart );
 
 							PRINT_LOG( "스턴 발생" );
@@ -513,6 +525,8 @@ void UserManager::ProcessSkill( const SOCKET socket, char* packet )
 			{
 
 				PlayerUnit* player = UserManager::GetInstance().GetUser( socket );
+				if ( !player )
+					return;
 				const Packet::SkillUseResult result( player->GetId(), ServerToClient::SKILLUSE_REQUEST_SUCCESS );
 				player->SetMp( 0 );
 				player->SetPlayerState( EPlayerState::STRONGER );

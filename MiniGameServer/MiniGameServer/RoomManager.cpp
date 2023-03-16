@@ -119,6 +119,7 @@ void RoomManager::UpdateRoomTimer()
 					for ( const auto& p : players )
 					{
 						UserManager::GetInstance().GetUsers()[ p ]->SendPacket( skillend );
+						PRINT_LOG( "스킬 사용종료 패킷 전송" );
 					}
 
 				}
