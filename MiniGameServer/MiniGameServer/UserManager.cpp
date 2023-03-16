@@ -635,7 +635,7 @@ void UserManager::ProcessMatchingRequest( const SOCKET socket, char* packet )
 						packet.y = pos.y;
 						packet.directionX = InitPlayer::INITDIRECTION_X[ count - 1 ];
 						packet.directionY = InitPlayer::INITDIRECTION_Y[ count - 1 ];
-						strcpy_s( packet.name, users[ other ]->GetName().c_str() );
+						strcpy_s( packet.name, DataBaseManager::GetInstance().EncodingString( users[ other ]->GetName().c_str() ).c_str() );
 
 						users[ other ]->SetPosition( pos );
 						users[ other ]->SetColor( count );

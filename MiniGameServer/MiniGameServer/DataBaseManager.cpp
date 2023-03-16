@@ -192,9 +192,9 @@ bool DataBaseManager::LogOn( const std::string& name, const std::string& passwor
 		delete m_preparedStatement;
 	try{
 		std::string playerName = DecodingString( m_result->getString( "_name" ) );
-		std::cout << "아이디: " << playerName << std::endl;
+		//std::cout << "아이디: " << playerName << std::endl;
 		bestScore = m_result->getInt( "_bestScore" );
-		std::cout << "최고 점수: " << bestScore << std::endl;
+		//std::cout << "최고 점수: " << bestScore << std::endl;
 
 		INFO_LOG( "DataBase로부터 로그인 정보 송신 완료 [ name : %s, bestScore : %d ]", playerName.c_str(), bestScore );
 	}

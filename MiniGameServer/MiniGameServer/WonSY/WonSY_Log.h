@@ -74,7 +74,7 @@
 
 namespace WonSY
 {
-	// 穿号識情
+	// 穿号識情j
 
 #ifdef	WONSY_LOG_WRITE_FILE
 	namespace File
