@@ -52,7 +52,7 @@ bool DataBaseManager::DBConnect( )
 	m_driver = get_driver_instance();
 	if ( !m_driver )
 	{
-		PRINT_LOG( "Database & Server Connect Failed : m_driver == nullptr" );
+		WARN_LOG( "Database & Server Connect Failed : m_driver == nullptr" );
 		return false;
 	}
 
@@ -81,13 +81,13 @@ bool DataBaseManager::DBConnect( )
 
 	if ( !m_connect )
 	{
-		PRINT_LOG( "Database & Server Connect Failed : m_connect == nullptr" );
+		WARN_LOG( "Database & Server Connect Failed : m_connect == nullptr" );
 		return false;
 	}
 
 	m_connect->setClientOption( "OPT_CHARSET_NAME", "utf8mb4" );
 	m_connect->setClientOption( "SET_CHARSET_NAME", "utf8mb4" );
-	std::cout << "Database Connect Success..." << std::endl;
+	INFO_LOG( "Database Connect Success..." );
 	return true;
 }
 bool DataBaseManager::SignUp( const std::string& name, const std::string& password )
@@ -143,7 +143,7 @@ bool DataBaseManager::SignUp( const std::string& name, const std::string& passwo
 		std::cout << ", SQLState: " << e.getSQLState() << ")" << std::endl;
 	}
 
-	PRINT_LOG( "DataBase에 회원 정보 생성 완료" );
+	INFO_LOG( "DataBase에 회원 정보 생성 완료 [ name : %s, pw : %s ]", name.c_str(), password.c_str());
 	return !returnValue;
 }
 
@@ -195,6 +195,8 @@ bool DataBaseManager::LogOn( const std::string& name, const std::string& passwor
 		std::cout << "아이디: " << playerName << std::endl;
 		bestScore = m_result->getInt( "_bestScore" );
 		std::cout << "최고 점수: " << bestScore << std::endl;
+
+		INFO_LOG( "DataBase로부터 로그인 정보 송신 완료 [ name : %s, bestScore : %d ]", playerName.c_str(), bestScore );
 	}
 	catch ( sql::SQLException& e )
 	{
@@ -203,7 +205,6 @@ bool DataBaseManager::LogOn( const std::string& name, const std::string& passwor
 		std::cout << ", SQLState: " << e.getSQLState() << ")" << std::endl;
 	}
 
-	PRINT_LOG( "DataBase로부터 로그인 정보 송신 완료" );
 
 	return returnValue;
 }
@@ -226,7 +227,7 @@ bool DataBaseManager::BestScoreUpdate( const std::string& name, const int bestSc
 		return false;
 	}
 
-	PRINT_LOG( "best score 갱신" );
+	INFO_LOG( "best score 갱신" );
 
 	return true;
 }

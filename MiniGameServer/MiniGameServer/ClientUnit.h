@@ -47,6 +47,11 @@ public:
 	template< class PacketType >
 	void SendPacket( const PacketType& packet )
 	{
+		COMMON_LOG(
+			"[SEND] Socket : %d, PacketType : %s",
+			m_socket,
+			WsyEnum::ToString( static_cast< PACKET_TYPE::STOC >( static_cast< int >( packet.info.type ) ) ).c_str() );
+
 		_SendPacket( reinterpret_cast< const char* >( &packet ), packet.info.size );
 	}
 

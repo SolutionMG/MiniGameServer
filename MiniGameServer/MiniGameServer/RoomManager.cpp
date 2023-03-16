@@ -71,7 +71,7 @@ void RoomManager::UpdateRoomTimer()
 
 		if ( !room )
 		{
-			PRINT_LOG( "room == nullptr" );
+			WARN_LOG( "room == nullptr [ RoomNum : %d ]", roomNum );
 			continue;
 		}
 
@@ -119,7 +119,6 @@ void RoomManager::UpdateRoomTimer()
 					for ( const auto& p : players )
 					{
 						UserManager::GetInstance().GetUsers()[ p ]->SendPacket( skillend );
-						PRINT_LOG( "스킬 사용종료 패킷 전송" );
 					}
 
 				}
@@ -180,7 +179,7 @@ void RoomManager::UpdateRoomTimer()
 					player->SetClientState( EClientState::GAMEFINISH );
 					player->SetPlayerState( EPlayerState::NORMAL );
 					player->SendPacket( finalinfo );
-					int bestScore = player->GetBestScore();
+					int bestScore    = player->GetBestScore();
 					int currentScore = player->GetScore();
 					if ( bestScore < currentScore )
 					{
@@ -191,7 +190,7 @@ void RoomManager::UpdateRoomTimer()
 
 			} );
 			room->SetTime( 0 );
-			PRINT_LOG( "게임 종료 시간 도달 - 게임 종료 패킷 전송" );
+			INFO_LOG( "게임 종료 시간 도달 - 게임 종료 패킷 전송" );
 		}
 		else
 		{

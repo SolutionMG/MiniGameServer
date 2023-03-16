@@ -1,6 +1,8 @@
 #ifndef INITDEFINE_H
 #define INITDEFINE_H
 
+#include "WonSY/WonSY_Enum.h"
+
 namespace InitPacket
 {
 	constexpr unsigned short MAX_BUFFERSIZE = 1024;
@@ -72,6 +74,8 @@ namespace ClientToServer
 	constexpr unsigned char MATHCING_REQUEST			= 4;
 	constexpr unsigned char QUIT_ROOM					= 5;
 }
+
+
 // SERVER
 namespace ServerToClient
 {
@@ -97,5 +101,50 @@ namespace ServerToClient
 	constexpr unsigned char PLAYER_STUNEND				= 19;
 
 }
+
+
+namespace PACKET_TYPE
+{
+	enum class CTOS
+	{
+		LOGIN_REQUEST    = 0,
+		MOVE             = 1,
+		SKILLUSE_REQUEST = 2,
+		SIGNUP_REQUEST   = 3,
+		MATHCING_REQUEST = 4,
+		QUIT_ROOM        = 5,
+
+		Max
+	};
+
+	enum class STOC
+	{
+		FIRSTINFO					= 0,
+		LOGON_OK					= 1,
+		LOGON_FAILED				= 2,
+		INITPLAYERS					= 3,
+		MOVE						= 4,
+		TIME						= 5,
+		COLLISION_BLOCK				= 6,
+		COLLISION_PLAYER			= 7,
+		PLAYERSCORE					= 8,
+		COLLISION_WALL				= 9,
+		ENDGAME						= 10,
+		SKILLUSE_REQUEST_SUCCESS	= 11,
+		SKILLUSE_REQUEST_FAILED		= 12,
+		MP_UPDATE					= 13,
+		SKILLEND					= 14,
+		SIGNUP_OK					= 15,
+		SIGNUP_FAILED				= 16,
+		LOGIN_DUPLICATION			= 17,
+		PLAYER_STUNSTART			= 18,
+		PLAYER_STUNEND				= 19,
+
+		Max
+	};
+}
+
+EXPEND_ENUM_RANGE( PACKET_TYPE::CTOS );
+EXPEND_ENUM_RANGE( PACKET_TYPE::STOC );
 
 #endif // !INITDEFINE

@@ -22,7 +22,7 @@ bool NetworkManager::Initialize( )
 	int returnValue = WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
 	if ( returnValue != 0 )
 	{
-		PRINT_LOG( "WSAStartup failed" );
+		WARN_LOG( "WSAStartup failed" );
 		return false;
 	}
 
@@ -30,7 +30,7 @@ bool NetworkManager::Initialize( )
 
 	if ( m_listenSocket == INVALID_SOCKET )
 	{
-		PRINT_LOG( "WSASocket Initialize() failed" );
+		WARN_LOG( "WSASocket Initialize() failed" );
 		return false;
 	}
 
@@ -39,11 +39,11 @@ bool NetworkManager::Initialize( )
 	returnValue = setsockopt( m_listenSocket, SOL_SOCKET, TCP_NODELAY,  &socketOption, sizeof( socketOption ) );
 	if ( returnValue != 0 )
 	{
-		PRINT_LOG( "setsockopt Initialize() failed" );
+		WARN_LOG( "setsockopt Initialize() failed" );
 		return false;
 	}
 
-	std::cout << "Server Initialize Sueccess..." << std::endl;
+	INFO_LOG( "Server Initialize Sueccess..." );
 	return true;
 }
 
@@ -59,18 +59,18 @@ bool NetworkManager::Listen( )
 	int returnValue = bind( m_listenSocket, reinterpret_cast< sockaddr* >( &serverAddr ), sizeof( serverAddr ) );
 	if ( returnValue != 0 )
 	{
-		PRINT_LOG( "bind failed" );
+		WARN_LOG( "bind failed" );
 		return false;
 	}
 
 	returnValue = listen( m_listenSocket, SOMAXCONN );
 	if ( returnValue != 0 )
 	{
-		PRINT_LOG( "listen failed" );
+		WARN_LOG( "listen failed" );
 		return false;
 	}
 
-	std::cout << "Waiting For Player..." << std::endl;
+	INFO_LOG( "Waiting For Player... [ port : %d ]", InitServer::SERVERPORT );
 
 	return true;
 }
@@ -81,12 +81,12 @@ bool NetworkManager::RunServer( )
 	m_iocpHandle = CreateIoCompletionPort( INVALID_HANDLE_VALUE, NULL, NULL, 0 );
 	if ( m_iocpHandle == NULL )
 	{
-		PRINT_LOG( "CreateIoCompletionPort Failed m_iocpHandle Init" );
+		WARN_LOG( "CreateIoCompletionPort Failed m_iocpHandle Init" );
 		return false;
 	}
 	if ( CreateIoCompletionPort( reinterpret_cast< HANDLE >( m_listenSocket ), m_iocpHandle, 0, 0 ) == NULL )
 	{
-		PRINT_LOG( "CreateIoCompletionPort Failed Connect Process" );
+		WARN_LOG( "CreateIoCompletionPort Failed Connect Process" );
 		return false;
 	}
 	
@@ -121,7 +121,7 @@ void NetworkManager::ReassemblePacket( char* packet, const DWORD bytes, const SO
 {
 	if ( packet == nullptr || bytes == 0 )
 	{
-		PRINT_LOG( "packet == nullptr" );
+		WARN_LOG( "packet == nullptr" );
 		return;
 	}
 	// 각 유저별 패킷 재조립
@@ -182,7 +182,7 @@ void NetworkManager::Disconnect( const SOCKET socket )
 
 			if ( !user )
 			{
-				PRINT_LOG( "존재하지 않는 유저입니다." );
+				WARN_LOG( "존재하지 않는 유저입니다." );
 				return;
 			}
 
@@ -200,10 +200,11 @@ void NetworkManager::Disconnect( const SOCKET socket )
 				PlayerUnit* user = UserManager::GetInstance().GetUser( socket );
 				if ( !user )
 				{
-					PRINT_LOG( "user == nullptr" );
+					WARN_LOG( "user == nullptr [ socket : %d ]", socket );
 					return;
 				}
-				std::cout << user->GetSocket() << " 유저 접속 종료" << std::endl;
+
+				INFO_LOG( "유저 접속 종료 [ socket : %d ] ", socket );
 
 				UserManager::GetInstance().PushPlayerUnit( user );
 				UserManager::GetInstance().PushPlayerId( user->GetId() );
@@ -219,7 +220,7 @@ void NetworkManager::Disconnect( const SOCKET socket )
 			RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
 			if ( !room )
 			{
-				PRINT_LOG( "room == nullptr" );
+				WARN_LOG( "room == nullptr [ roomNum : %d ]", roomNum );
 				return;
 			}
 
@@ -229,7 +230,7 @@ void NetworkManager::Disconnect( const SOCKET socket )
 				RoomManager::GetInstance().PushRoom( room );
 				RoomManager::GetInstance().PushRoomNumber( roomNum );
 				RoomManager::GetInstance().DeleteRoom( roomNum );
-				PRINT_LOG( "방 삭제" );
+				INFO_LOG( "방 삭제 [ roomNum : %d ] ", roomNum );
 			}
 		} );
 }
@@ -239,7 +240,7 @@ bool NetworkManager::Accept( WSAOVERLAPPED_EXTEND* over )
 	SOCKET socket = WSASocket( AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED );
 	if ( socket == INVALID_SOCKET )
 	{
-		PRINT_LOG( "WSASocket failed" );
+		WARN_LOG( "WSASocket failed" );
 		return false;
 	}
 
@@ -247,7 +248,7 @@ bool NetworkManager::Accept( WSAOVERLAPPED_EXTEND* over )
 	int returnValue = setsockopt( socket, SOL_SOCKET, TCP_NODELAY, reinterpret_cast< const char* >( &socketOption ), sizeof( socketOption ) );
 	if ( returnValue != 0 )
 	{
-		PRINT_LOG( "setsockopt Accept()" );
+		WARN_LOG( "setsockopt Accept()" );
 		return false;
 	}
 
@@ -264,7 +265,7 @@ bool NetworkManager::Accept( WSAOVERLAPPED_EXTEND* over )
 		if ( WSAGetLastError( ) == ERROR_IO_PENDING )
 			return true;
 
-		PRINT_LOG( "AcceptEx Accept()" );
+		WARN_LOG( "AcceptEx Accept()" );
 		return false;
 	}
 
@@ -317,7 +318,7 @@ void NetworkManager::MainWorkProcess( )
 			}
 
 			userKey = overExtend->socket;
-			std::cout << "ACCEPT Player [" << userKey << "]" << std::endl;
+			INFO_LOG( "ACCEPT Player [ userKey : %d ] ", userKey );
 
 			// Player 생성
 			UserManager::GetInstance().PushTask(
@@ -341,7 +342,7 @@ void NetworkManager::MainWorkProcess( )
 						HANDLE returnValue2 = CreateIoCompletionPort( reinterpret_cast< HANDLE >( userKey ), NetworkManager::GetInstance().GetIocpHandle(), userKey, 0 );
 						if ( returnValue2 == NULL )
 						{
-							PRINT_LOG( "CreateIoCompletionPort AddNewClient()" );
+							INFO_LOG( "CreateIoCompletionPort AddNewClient()" );
 							return;
 						}
 

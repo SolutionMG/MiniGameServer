@@ -47,22 +47,27 @@ void UserManager::ProcessPacket( const SOCKET socket, char* packet )
 {
 	if ( !packet )
 	{
-		PRINT_LOG( "packet == nullptr" );
+		WARN_LOG( "packet == nullptr" );
 		return;
 	}
 
 	if ( m_users.find( socket ) == m_users.end( ) )
 	{
-		PRINT_LOG( "socket == null, 존재하지 않는 유저로부터의 패킷입니다." );
+		WARN_LOG( "socket == null, 존재하지 않는 유저로부터의 패킷입니다." );
 		return;
 	}
 
 	if ( m_processFunctions.find( packet[ 1 ] ) == m_processFunctions.end() )
 	{
-		PRINT_LOG( "없는 패킷 타입입니다." );
+		WARN_LOG( "없는 패킷 타입입니다." );
 		return;
 	}
 
+	COMMON_LOG(
+		"[RECV] Socket : %d, PacketType : %s", 
+		socket,
+		WsyEnum::ToString( static_cast< PACKET_TYPE::CTOS >( static_cast< int >( packet[ 1 ] ) ) ).c_str() );
+	
 	m_processFunctions[ packet[ 1 ] ]( socket, packet );
 }
 
@@ -82,7 +87,7 @@ void UserManager::ProcessLoginRequest( const SOCKET socket, char* packet )
 	// 로그인 요청 
 	if ( !packet )
 	{
-		PRINT_LOG( "packet == nullptr" );
+		WARN_LOG( "packet == nullptr" );
 		return;
 	}
 
@@ -90,7 +95,7 @@ void UserManager::ProcessLoginRequest( const SOCKET socket, char* packet )
 
 	if ( m_users.find( socket ) == m_users.end() )
 	{
-		PRINT_LOG( "socket == nullptr" );
+		WARN_LOG( "socket == nullptr" );
 		return;
 	}
 
@@ -98,7 +103,7 @@ void UserManager::ProcessLoginRequest( const SOCKET socket, char* packet )
 
 	if ( !player )
 	{
-		PRINT_LOG( "player == nullptr" );
+		WARN_LOG( "player == nullptr" );
 		return;
 	}
 
@@ -113,7 +118,7 @@ void UserManager::ProcessLoginRequest( const SOCKET socket, char* packet )
 		std::string curName = DataBaseManager::GetInstance().DecodingString( data.name );
 		if ( user->GetName() == curName )
 		{
-			PRINT_LOG( "중복 로그인" );
+			WARN_LOG( "중복 로그인 [ name : %s ]", curName.c_str() );
 			send.info.type = ServerToClient::LOGIN_DUPLICATION;
 			player->SendPacket( send );
 			return;
@@ -128,7 +133,9 @@ void UserManager::ProcessLoginRequest( const SOCKET socket, char* packet )
 		player->SetBestScore( bestScore );
 		player->SendPacket( send );
 		player->SetClientState( EClientState::LOGON );
-		PRINT_LOG( "로그인 성공" );
+
+		INFO_LOG( "중복 로그인 [ name : %s ]", player->GetName().c_str() );
+
 		return;
 	}
 #endif // _DEBUG
@@ -142,7 +149,7 @@ void UserManager::ProcessSignupRequest( const SOCKET socket, char* packet )
 	// 회원가입 요청
 	if ( !packet )
 	{
-		PRINT_LOG( "packet == nullptr" );
+		WARN_LOG( "packet == nullptr" );
 		return;
 	}
 
@@ -150,7 +157,7 @@ void UserManager::ProcessSignupRequest( const SOCKET socket, char* packet )
 
 	if ( m_users.find( socket ) == m_users.end() )
 	{
-		PRINT_LOG( "socket == nullptr" );
+		WARN_LOG( "socket == nullptr" );
 		return;
 	}
 
@@ -158,7 +165,7 @@ void UserManager::ProcessSignupRequest( const SOCKET socket, char* packet )
 
 	if ( !player )
 	{
-		PRINT_LOG( "player == nullptr" );
+		WARN_LOG( "player == nullptr" );
 		return;
 	}
 
@@ -169,12 +176,12 @@ void UserManager::ProcessSignupRequest( const SOCKET socket, char* packet )
 		result.info.type = ServerToClient::SIGNUP_OK ;
 		player->SetName( data.name );
 		player->SendPacket( result );
-		PRINT_LOG( "회원가입 성공" );
+		INFO_LOG( "회원가입 성공 [ socket : %d , %s ]", socket, player->GetName().c_str() );
 		return;
 	}
 #endif
 	player->SendPacket( result );
-	PRINT_LOG( "회원가입 실패" );
+	WARN_LOG( "회원가입 실패 [ socket : %d , %s ]", socket, player->GetName().c_str() );
 }
 
 void UserManager::ProcessMove( const SOCKET socket, char* packet )
@@ -184,7 +191,7 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 
 	if ( m_users.find( socket ) == m_users.end() )
 	{
-		PRINT_LOG( "존재하지 않는 유저 입니다." );
+		WARN_LOG( "존재하지 않는 유저 입니다. [ socket : %d ]", socket );
 		return;
 	}
 
@@ -192,7 +199,7 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 
 	if ( !player )
 	{
-		PRINT_LOG( "존재하지 않는 유저 입니다." );
+		WARN_LOG( "존재하지 않는 유저 입니다. [ socket : %d ]", socket );
 		return;
 	}
 
@@ -207,7 +214,7 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 
 	if ( distance > predictDistance )
 	{
-		PRINT_LOG( "이상한 좌표를 수신" );
+		WARN_LOG( "이상한 좌표를 수신 [ distance : %d, predictDistance : %d ]", distance, predictDistance );
 		return;
 	}
 
@@ -220,7 +227,7 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 		RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
 		if ( !room )
 		{
-			PRINT_LOG( "존재하지 않는 방입니다." );
+			WARN_LOG( "존재하지 않는 방입니다 [ roomNum: %d ]", roomNum );
 			return;
 		}
 
@@ -232,7 +239,7 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 			PlayerUnit* player = UserManager::GetInstance().GetUser( socket );
 			if ( !player )
 			{
-				PRINT_LOG( "존재하지 않는 유저 입니다." );
+				WARN_LOG( "존재하지 않는 유저입니다 [ socket: %d ]", socket );
 				return;
 			}
 			const short color = player->GetColor();
@@ -340,12 +347,15 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 							{
 								users[ index ]->SetPlayerState( EPlayerState::NORMAL );
 								users[ index ]->SetSkillDuration( 0 );
+
+								INFO_LOG( "스턴 공격 [ id : %d ] ", users[ index ]->GetSocket() );
 							}
 							else if ( users[ index ]->GetPlayerState() == EPlayerState::NORMAL )
 							{
 								users[ index ]->SetPlayerState( EPlayerState::STUN );
 								users[ index ]->SetStunDuration( 0 );
 
+								INFO_LOG( "스턴 발생 [ id : %d ] ", users[ index ]->GetSocket() );
 							}
 							
 							//스킬 종료 정보 전송
@@ -358,8 +368,6 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 							}
 							
 							users[ index ]->SendPacket( stunStart );
-
-							PRINT_LOG( "스턴 발생" );
 						}
 
 						// 충돌 정보 전송
@@ -378,7 +386,7 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 
 				if ( blockIndex < 0 || blockIndex > 48 )
 				{
-					PRINT_LOG( "맵 외부의 좌표 수신" );
+					WARN_LOG( "맵 외부의 좌표 수신 [ xIndex : %d, yIndex : %d, blockIndex : %d ]", xIndex, yIndex, blockIndex );
 					return;
 				}
 
@@ -391,7 +399,7 @@ void UserManager::ProcessMove( const SOCKET socket, char* packet )
 						RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
 						if ( !room )
 						{
-							PRINT_LOG( "존재하지 않는 방입니다." );
+							WARN_LOG( "존재하지 않는 방입니다. [ roomNum :  %d ]", roomNum );
 							return;
 						}
 
@@ -492,7 +500,7 @@ void UserManager::ProcessSkill( const SOCKET socket, char* packet )
 
 	if ( m_users.find( socket ) == m_users.end() )
 	{
-		PRINT_LOG( "존재하지 않는 유저 입니다." );
+		WARN_LOG( "존재하지 않는 유저입니다. [ socket :  %d ]", socket );
 		return;
 	}
 
@@ -500,7 +508,7 @@ void UserManager::ProcessSkill( const SOCKET socket, char* packet )
 
 	if ( !player )
 	{
-		PRINT_LOG( "존재하지 않는 유저 입니다." );
+		WARN_LOG( "존재하지 않는 유저입니다. [ socket :  %d ]", socket );
 		return;
 	}
 	const Packet::SkillUseResult result(player->GetId(), ServerToClient::SKILLUSE_REQUEST_FAILED);
@@ -515,7 +523,7 @@ void UserManager::ProcessSkill( const SOCKET socket, char* packet )
 			RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
 			if ( !room )
 			{
-				PRINT_LOG( "존재하지 않는 방 입니다." );
+				WARN_LOG( "존재하지 않는 방입니다. [ roomNum :  %d ]", roomNum );
 				return;
 			}
 			auto& players = room->GetPlayers();
@@ -523,7 +531,6 @@ void UserManager::ProcessSkill( const SOCKET socket, char* packet )
 			UserManager::GetInstance().PushTask(
 			[ players, socket ]()
 			{
-
 				PlayerUnit* player = UserManager::GetInstance().GetUser( socket );
 				if ( !player )
 					return;
@@ -536,7 +543,7 @@ void UserManager::ProcessSkill( const SOCKET socket, char* packet )
 					UserManager::GetInstance().GetUser( index )->SendPacket(result);
 				}
 
-				PRINT_LOG( "스킬 사용 승인 패킷 전송" );
+				INFO_LOG( "스킬 사용 승인 패킷 전송 [ socket : %d ]", socket );
 			} );
 		} );
 
@@ -580,7 +587,7 @@ void UserManager::ProcessMatchingRequest( const SOCKET socket, char* packet )
 
 		if ( !currentRoom )
 		{
-			PRINT_LOG( "currentRoom == nullptr" );
+			WARN_LOG( "currentRoom == nullptr [ roomNum : %d ]", roomNum );
 			return;
 		}
 
@@ -598,7 +605,7 @@ void UserManager::ProcessMatchingRequest( const SOCKET socket, char* packet )
 		// 현재 방에 3명 존재 시 게임 시작
 		if ( currentRoom->GetPlayers().size() == InitWorld::INGAMEPLAYER_NUM )
 		{
-			PRINT_LOG( "방에 3명 입장" );
+			INFO_LOG( "방에 3명 입장 [ roomNum : %d ]", roomNum );
 			currentRoom->SetState( RoomState::GAME );
 
 			// 방에 있는 플레이어들에게 각각의 플레이어들 초기 정보 전송 (고유 색, 이름 등)
@@ -609,7 +616,7 @@ void UserManager::ProcessMatchingRequest( const SOCKET socket, char* packet )
 				auto& users = UserManager::GetInstance().GetUsers();
 				if ( users.find( socket ) == users.end() )
 				{
-					PRINT_LOG( "user == nullptr" );
+					WARN_LOG( "user == nullptr [ socket : %d ]", socket );
 					return;
 				}
 				int count = 1;
@@ -642,7 +649,7 @@ void UserManager::ProcessMatchingRequest( const SOCKET socket, char* packet )
 					}
 				}
 
-				PRINT_LOG( "게임시작 패킷 전송 완료" );
+				INFO_LOG( "게임시작 패킷 전송 완료" );
 
 				for ( const auto index : others )
 				{
@@ -676,7 +683,7 @@ void UserManager::ProcessQuitRoom( const SOCKET socket, char* packet )
 
 	if ( !user )
 	{
-		PRINT_LOG( "존재하지 않는 유저입니다." );
+		WARN_LOG( "존재하지 않는 유저입니다. [ socket : %d ]", socket );
 		return;
 	}
 
@@ -686,7 +693,7 @@ void UserManager::ProcessQuitRoom( const SOCKET socket, char* packet )
 
 	if ( state != EClientState::GAMEFINISH )
 	{
-		PRINT_LOG( "게임 룸 속 게임이 종료된 유저가 아닙니다." );
+		WARN_LOG( "게임 룸 속 게임이 종료된 유저가 아닙니다. [ socket : %d ]", socket );
 		return;
 	}
 
@@ -696,7 +703,7 @@ void UserManager::ProcessQuitRoom( const SOCKET socket, char* packet )
 		RoomUnit* room = RoomManager::GetInstance().GetRoom( roomNum );
 		if ( !room )
 		{
-			PRINT_LOG( "room == nullptr" );
+			WARN_LOG( "room == nullptr [ roomNum : %d ]", roomNum );
 			return;
 		}
 
@@ -706,7 +713,7 @@ void UserManager::ProcessQuitRoom( const SOCKET socket, char* packet )
 			RoomManager::GetInstance().PushRoom( room );
 			RoomManager::GetInstance().PushRoomNumber( roomNum );
 			RoomManager::GetInstance().DeleteRoom( roomNum );
-			PRINT_LOG( "방에 존재한 플레이여 0명 - 방 삭제" );
+			INFO_LOG( "방에 존재한 플레이여 0명 - 방 삭제 [ roomNum : %d ]", roomNum );
 		}
 
 		UserManager::GetInstance().PushTask(
@@ -723,8 +730,8 @@ void UserManager::ProcessQuitRoom( const SOCKET socket, char* packet )
 			user->SetStunDuration( 0 );
 		} );
 	} );
-	PRINT_LOG( "QuitRoom 패킷 - 방 나가기 완료" );
 
+	INFO_LOG( "QuitRoom 패킷 - 방 나가기 완료 [ roomNum : %d ]", roomNum );
 }
 
 void UserManager::DeleteUser( const SOCKET socket )

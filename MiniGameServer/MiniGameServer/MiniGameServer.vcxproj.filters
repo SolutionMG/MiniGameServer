@@ -52,6 +52,12 @@
     <Filter Include="01.Manager\Math">
       <UniqueIdentifier>{872ceb31-73cd-435d-9726-465e9910dafb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="WonSY">
+      <UniqueIdentifier>{908f9196-b2df-40d5-87ba-f22b64df8d77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenSource">
+      <UniqueIdentifier>{53a6a6f4-c3b4-44e4-9479-91196a2a673c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Singleton.hpp">
@@ -102,6 +108,21 @@
     <ClInclude Include="InitDefine.h">
       <Filter>99.Base</Filter>
     </ClInclude>
+    <ClInclude Include="WonSY\WonSY_Singleton.hpp">
+      <Filter>WonSY</Filter>
+    </ClInclude>
+    <ClInclude Include="WonSY\WonSY_Time.h">
+      <Filter>WonSY</Filter>
+    </ClInclude>
+    <ClInclude Include="WonSY\WonSY_Enum.h">
+      <Filter>WonSY</Filter>
+    </ClInclude>
+    <ClInclude Include="WonSY\WonSY_Log.h">
+      <Filter>WonSY</Filter>
+    </ClInclude>
+    <ClInclude Include="WonSY\Opensource\magic_enum.hpp">
+      <Filter>OpenSource</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainProcess.cpp">
@@ -142,6 +163,15 @@
     </ClCompile>
     <ClCompile Include="MathManager.cpp">
       <Filter>01.Manager\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="WonSY\WonSY_Time.cpp">
+      <Filter>WonSY</Filter>
+    </ClCompile>
+    <ClCompile Include="WonSY\WonSY_Enum.cpp">
+      <Filter>WonSY</Filter>
+    </ClCompile>
+    <ClCompile Include="WonSY\WonSY_Log.cpp">
+      <Filter>WonSY</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

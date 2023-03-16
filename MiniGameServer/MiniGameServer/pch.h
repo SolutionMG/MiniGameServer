@@ -26,5 +26,10 @@
 #pragma comment(lib, "libmysql.lib")
 #pragma comment(lib, "mysqlcppconn.lib")
 
+//WONSY Util
+#include "WonSY/WonSY_Log.h"
+#include "WonSY/WonSY_Enum.h"
+
+
 #endif // !PCH_H
 
